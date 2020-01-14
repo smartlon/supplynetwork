@@ -10,13 +10,13 @@ import (
 	"crypto/x509/pkix"
 	"encoding/asn1"
 	"encoding/pem"
-	"github.com/cloudflare/cfssl/csr"
+	"errors"
+	"fmt"
 	"golang.org/x/crypto/sha3"
 	"hash"
 	"math/big"
 	"net"
 	"net/mail"
-	"os"
 )
 
 // CryptSuite defines common interface for different crypto implementations.
@@ -31,6 +31,14 @@ type CryptoSuite interface {
 	Sign(msg []byte, k interface{}) ([]byte, error)
 	// Hash computes Hash value of provided data. Hash function will be different in different crypto implementations.
 	Hash(data []byte) []byte
+	// new key to byte
+	NewKey() (CryptoSuite, error)
+	// get privateKey byte
+	GetPemPrivateKey() ([]byte, error)
+	// get publicKey byte
+	GetPemPublicKey() ([]byte, error)
+	// verify by public
+	Verify(private interface{}, signature, digest []byte) (valid bool, err error)
 }
 
 var (
@@ -54,11 +62,55 @@ type eCDSASignature struct {
 	R, S *big.Int
 }
 
+func (c *ECCryptSuite) NewKey() (CryptoSuite, error) {
+	/*if c.key != nil {
+		return c, nil
+	}*/
+	key, err := ecdsa.GenerateKey(c.curve, rand.Reader)
+	if err != nil {
+		return nil, err
+	}
+	res := &ECCryptSuite{
+		curve:        c.curve,
+		sigAlgorithm: c.sigAlgorithm,
+		key:          key,
+		hashFunction: c.hashFunction,
+	}
+	return res, nil
+}
+
+func (c *ECCryptSuite) GetPemPrivateKey() ([]byte, error) {
+	if c.key == nil {
+		return nil, fmt.Errorf("PrivateKey not found")
+	}
+	raw, err := x509.MarshalPKCS8PrivateKey(c.key)
+	if err != nil {
+		return nil, fmt.Errorf("Failed marshalling Privatekey [%s]", err)
+	}
+	b := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: raw})
+	return b, nil
+}
+
+func (c *ECCryptSuite) GetPemPublicKey() ([]byte, error) {
+	if c.key == nil {
+		return nil, fmt.Errorf("PrivateKey not found")
+	}
+
+	raw, err := x509.MarshalPKIXPublicKey(c.key.Public())
+	if err != nil {
+		return nil, fmt.Errorf("Failed marshalling PublicKey [%s]", err)
+	}
+	b := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: raw})
+	return b, nil
+}
+
 func (c *ECCryptSuite) GenerateKey() (interface{}, error) {
 	key, err := ecdsa.GenerateKey(c.curve, rand.Reader)
 	if err != nil {
 		return nil, err
 	}
+	c.key = key
+
 	return key, nil
 }
 
@@ -106,52 +158,6 @@ func (c *ECCryptSuite) CreateCertificateRequest(enrollmentId string, key interfa
 	return csr, nil
 }
 
-/*func (c *ECCryptSuite) CreateCertificateRequest(req *CSRInfo) ([]byte, core.key, error) {
-	cr := newCertificateRequest(req)
-	key, cspSigner, err := util.BCCSPKeyRequestGenerate(cr, c.csp)
-	if err != nil {
-		log.Debugf("failed generating BCCSP key: %s", err)
-		return nil, nil, err
-	}
-
-	csrPEM, err := csr.Generate(cspSigner, cr)
-	if err != nil {
-		log.Debugf("failed generating CSR: %s", err)
-		return nil, nil, err
-	}
-
-	return csrPEM, key, nil
-}*/
-
-func newCertificateRequest(req *CSRInfo) *csr.CertificateRequest {
-	cr := csr.CertificateRequest{}
-	if req != nil && req.Names != nil {
-		cr.Names = req.Names
-	}
-	if req != nil && req.Hosts != nil {
-		cr.Hosts = req.Hosts
-	} else {
-		// Default requested hosts are local hostname
-		hostname, _ := os.Hostname()
-		if hostname != "" {
-			cr.Hosts = make([]string, 1)
-			cr.Hosts[0] = hostname
-		}
-	}
-	if req != nil && req.KeyRequest != nil {
-		cr.KeyRequest = newCfsslBasicKeyRequest(req.KeyRequest)
-	}
-	if req != nil {
-		cr.CA = req.CA
-		cr.SerialNumber = req.SerialNumber
-	}
-	return &cr
-}
-
-func newCfsslBasicKeyRequest(bkr *BasicKeyRequest) *csr.BasicKeyRequest {
-	return &csr.BasicKeyRequest{A: bkr.Algo, S: bkr.Size}
-}
-
 func (c *ECCryptSuite) Sign(msg []byte, k interface{}) ([]byte, error) {
 	key, ok := k.(*ecdsa.PrivateKey)
 	if !ok {
@@ -163,24 +169,17 @@ func (c *ECCryptSuite) Sign(msg []byte, k interface{}) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	c.preventMalleability(key, S)
-	sig, err := asn1.Marshal(eCDSASignature{R: R, S: S})
+	S, _, err = ToLowS(&key.PublicKey, S)
+	if err != nil {
+		return nil, err
+	}
+	sig, err := asn1.Marshal(eCDSASignature{R, S})
 	if err != nil {
 		return nil, err
 	}
 	return sig, nil
 }
 
-// ECDSA signature can be "exploited" using symmetry of S values.
-// Fabric (by convention) accepts only signatures with lowS values
-// If result of a signature is high-S value we have to subtract S from curve.N
-// For more details https://github.com/bitcoin/bips/blob/master/bip-0062.mediawiki
-func (c *ECCryptSuite) preventMalleability(k *ecdsa.PrivateKey, S *big.Int) {
-	halfOrder := ecCurveHalfOrders[k.Curve]
-	if S.Cmp(halfOrder) == 1 {
-		S.Sub(k.Params().N, S)
-	}
-}
 func (c *ECCryptSuite) Hash(data []byte) []byte {
 	h := c.hashFunction()
 	h.Write(data)
@@ -214,4 +213,53 @@ func NewECCryptoSuiteFromConfig(config CryptoConfig) (CryptoSuite, error) {
 		return nil, ErrInvalidHash
 	}
 	return suite, nil
+}
+
+// 私钥 签名 待签名的数据
+func (c *ECCryptSuite) Verify(public interface{}, signature, digest []byte) (valid bool, err error) {
+	k, ok := public.(*ecdsa.PublicKey)
+	if !ok {
+		err = fmt.Errorf("public key error")
+		return
+	}
+	r, s, err := c.UnmarshalECDSASignature(signature)
+	if err != nil {
+		return false, fmt.Errorf("Failed unmashalling signature [%s]", err)
+	}
+
+	lowS, err := IsLowS(k, s)
+	if err != nil {
+		return false, err
+	}
+
+	if !lowS {
+		return false, fmt.Errorf("Invalid S. Must be smaller than half the order [%s].", s)
+	}
+	hashByte := c.Hash(digest)
+	return ecdsa.Verify(k, hashByte, r, s), nil
+}
+
+func (c *ECCryptSuite) UnmarshalECDSASignature(raw []byte) (*big.Int, *big.Int, error) {
+	// Unmarshal
+	sig := new(eCDSASignature)
+	_, err := asn1.Unmarshal(raw, sig)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed unmashalling signature [%s]", err)
+	}
+	// Validate sig
+	if sig.R == nil {
+		return nil, nil, errors.New("invalid signature, R must be different from nil")
+	}
+	if sig.S == nil {
+		return nil, nil, errors.New("invalid signature, S must be different from nil")
+	}
+
+	if sig.R.Sign() != 1 {
+		return nil, nil, errors.New("invalid signature, R must be larger than zero")
+	}
+	if sig.S.Sign() != 1 {
+		return nil, nil, errors.New("invalid signature, S must be larger than zero")
+	}
+
+	return sig.R, sig.S, nil
 }

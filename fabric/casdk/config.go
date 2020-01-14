@@ -10,9 +10,10 @@ import (
 type CAConfig struct {
 	CryptoConfig      `yaml:"crypto"`
 	Url               string `yaml:"url"`
-	SkipTLSValidation bool   `yaml:"skipTLSValidation"`
-	MspId             string `yaml:"mspId"`
+	SkipTLSValidation bool   `yaml:"skiptlsvalidation"`
+	MspId             string `yaml:"mspid"`
 	FilePath          string `yaml:"filepath"`
+	CaName			  string `yaml:"caname"`
 }
 
 type CryptoConfig struct {

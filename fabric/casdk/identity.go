@@ -5,6 +5,8 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
@@ -17,35 +19,6 @@ type Identity struct {
 }
 
 var ID *Identity
-
-/*func (i *Identity) MarshalIndentity() error {
-	var pk, cert string
-
-	switch i.PrivateKey.(type) {
-	case *ecdsa.PrivateKey:
-		cast := i.PrivateKey.(*ecdsa.PrivateKey)
-		b, err := x509.MarshalECPrivateKey(cast)
-		if err != nil {
-			return err
-		}
-		block := pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: b})
-		pk = base64.RawStdEncoding.EncodeToString(block)
-	default:
-		return ErrInvalidKeyType
-	}
-
-	cert = base64.RawStdEncoding.EncodeToString(i.Certificate.Raw)
-	i.CetMap = make(map[string]string)
-	i.CetMap["cert"] = cert
-	i.CetMap["pk"] = pk
-	i.CetMap["mspid"] = i.MspId
-//	str, err := json.Marshal(map[string]string{"cert":cert, "pk":pk, "mspid":i.MspId})
-//	if err != nil {
-//		return "", err
-//	}
-//	return string(str), nil
-	return nil
-}*/
 
 func (i *Identity) SaveCert(ca *FabricCAClient, enreq *CaEnrollmentRequest, cainfo *CAGetCertResponse) error {
 	var mspDir string
@@ -255,4 +228,66 @@ func (i *Identity) SaveTLScert(ca *FabricCAClient, cainfo *CAGetCertResponse) er
 		return nil
 	}
 	return nil
+}
+
+func (i *Identity) GetPemCert() []byte {
+	return CertToPem(i.Certificate)
+}
+
+func (i *Identity) GetPemPrivateKey() ([]byte, error) {
+	raw, err := x509.MarshalPKCS8PrivateKey(i.PrivateKey)
+	if err != nil {
+		return nil, fmt.Errorf("Failed marshalling Privatekey [%s]", err)
+	}
+	b := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: raw})
+	return b, nil
+}
+
+func (i *Identity) GetPemPublicKey() (b []byte, err error) {
+	privKey, ok := i.PrivateKey.(*ecdsa.PrivateKey)
+	if !ok {
+		err = errors.New("privateKey type error")
+		return
+	}
+	raw, err := x509.MarshalPKIXPublicKey(privKey.Public())
+	if err != nil {
+		return nil, fmt.Errorf("Failed marshalling PublicKey [%s]", err)
+	}
+	b = pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: raw})
+	return b, nil
+}
+
+func (i *Identity) GetStoreData() (cert, privateKey, publicKey []byte, err error) {
+	cert = i.GetPemCert()
+	privateKey, err = i.GetPemPrivateKey()
+	if err != nil {
+		return
+	}
+	publicKey, err = i.GetPemPublicKey()
+	if err != nil {
+		return
+	}
+	return
+}
+
+
+
+func (i *Identity) setPemPrivateKey(privateKey []byte) {
+
+}
+
+
+
+func InitAdminIdentity(cert, privateKey []byte) (*Identity, error) {
+	var err error
+	adminIdn := &Identity{}
+	adminIdn.PrivateKey, err = ParsePemKey(privateKey)
+	if err != nil {
+		return nil, err
+	}
+	adminIdn.Certificate, err = ParsePemCert(cert)
+	if err != nil {
+		return nil, err
+	}
+	return adminIdn, nil
 }
