@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	CHAINCODEID = "logistic"
+	CHAINCODEID = "supcc"
 
 )
 

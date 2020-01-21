@@ -22,7 +22,7 @@ client:
 
   # Which organization does this application instance belong to? The value must be the name of an org
   # defined under "organizations"
-  organization: org1
+  organization: Producer
 
   logging:
     level: info
@@ -30,7 +30,7 @@ client:
 
   # Root of the MSP directories with keys and certs.
   cryptoconfig:
-    path: /home/lgao/go/src/github.com/smartlon/gateway/adapter/fabric/network/fixtures/config/crypto-config
+    path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config
 
   # Some SDKs support pluggable KV stores, the properties under "credentialStore"
   # are implementation specific
@@ -63,9 +63,9 @@ client:
     # [Optional]. Client key and cert for TLS handshake with peers and orderers
     client:
       key:
-        path: /home/lgao/go/src/github.com/smartlon/gateway/adapter/fabric/network/fixtures/config/crypto-config/peerOrganizations/org1.example.com/users/User1@org1.example.com/tls/client.key
+        path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/producer.example.com/users/User1@org1.example.com/tls/client.key
       cert:
-        path: /home/lgao/go/src/github.com/smartlon/gateway/adapter/fabric/network/fixtures/config/crypto-config/peerOrganizations/org1.example.com/users/User1@org1.example.com/tls/client.crt
+        path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/producer.example.com/users/User1@org1.example.com/tls/client.crt
 
 #
 # [Optional]. But most apps would have this section so that channel objects can be constructed
@@ -77,7 +77,7 @@ channels:
   logchannel:
     # Required. list of peers from participating orgs
     peers:
-      peer0.org1.example.com:
+      peer0.producer.example.com:
         # [Optional]. will this peer be sent transaction proposals for endorsement? The peer must
         # have the chaincode installed. The app can also use this property to decide which peers
         # to send the chaincode install request. Default: true
@@ -97,7 +97,17 @@ channels:
         # Default: true
         eventSource: true
 
-      peer0.org2.example.com:
+      peer0.manufacturer.example.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+      peer0.deliverer.example.com:
+        endorsingPeer: true
+        chaincodeQuery: true
+        ledgerQuery: true
+        eventSource: true
+      peer0.retailer.example.com:
         endorsingPeer: true
         chaincodeQuery: true
         ledgerQuery: true
@@ -127,15 +137,14 @@ channels:
 # list of participating organizations in this network
 #
 organizations:
-  org1:
-    mspid: Org1MSP
+  Producer:
+    mspid: ProducerMSP
 
     # This org's MSP store (absolute path or relative to client.cryptoconfig)
-    cryptoPath:  peerOrganizations/org1.example.com/users/{username}@org1.example.com/msp
+    cryptoPath:  peerOrganizations/producer.example.com/users/{username}@producer.example.com/msp
 
     peers:
-      - peer0.org1.example.com
-      - peer1.org1.example.com
+      - peer0.producer.example.com
 
     # [Optional]. Certificate Authorities issue certificates for identification purposes in a Fabric based
     # network. Typically certificates provisioning is done in a separate process outside of the
@@ -143,28 +152,51 @@ organizations:
     # dynamic certificate management (enroll, revoke, re-enroll). The following section is only for
     # Fabric-CA servers.
     certificateAuthorities:
-      - ca.org1.example.com
+      - caProducer
 
   # the profile will contain public information about organizations other than the one it belongs to.
   # These are necessary information to make transaction lifecycles work, including MSP IDs and
   # peers with a public URL to send transaction proposals. The file will not contain private
   # information reserved for members of the organization, such as admin key and certificate,
   # fabric-ca registrar enroll ID and secret, etc.
-  org2:
-    mspid: Org2MSP
+  Manufacturer:
+    mspid: ManufacturerMSP
 
     # This org's MSP store (absolute path or relative to client.cryptoconfig)
-    cryptoPath:  peerOrganizations/org2.example.com/users/{username}@org2.example.com/msp
+    cryptoPath:  peerOrganizations/manufacturer.example.com/users/{username}@manufacturer.example.com/msp
 
     peers:
-      - peer0.org2.example.com
-      - peer1.org2.example.com
+      - peer0.manufacturer.example.com
 
     certificateAuthorities:
-      - ca.org2.example.com
+      - caManufacturer
+
+  Deliverer:
+    mspid: DelivererMSP
+
+    # This org's MSP store (absolute path or relative to client.cryptoconfig)
+    cryptoPath:  peerOrganizations/deliverer.example.com/users/{username}@deliverer.example.com/msp
+
+    peers:
+      - peer0.deliverer.example.com
+
+    certificateAuthorities:
+      - caDeliverer
+
+  Retailer:
+    mspid: RetailerMSP
+
+    # This org's MSP store (absolute path or relative to client.cryptoconfig)
+    cryptoPath:  peerOrganizations/retailer.example.com/users/{username}@retailer.example.com/msp
+
+    peers:
+      - peer0.retailer.example.com
+
+    certificateAuthorities:
+      - caRetailer
 
   # Orderer Org name
-  ordererorg:
+  OrdererOrg:
       # Membership Service Provider ID for this organization
       mspID: OrdererOrg
 
@@ -196,21 +228,21 @@ orderers:
 
     tlsCACerts:
       # Certificate location absolute path
-      path: /home/lgao/go/src/github.com/smartlon/gateway/adapter/fabric/network/fixtures/config/crypto-config/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem
+      path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/ordererOrganizations/example.com/tlsca/tlsca.example.com-cert.pem
 
 #
 # List of peers to send various requests to, including endorsement, query
 # and event listener registration.
 #
 peers:
-  peer0.org1.example.com:
+  peer0.producer.example.com:
     # this URL is used to send endorsement and query requests
     url: localhost:7051
     # eventUrl is only needed when using eventhub (default is delivery service)
     eventUrl: localhost:7053
 
     grpcOptions:
-      ssl-target-name-override: peer0.org1.example.com
+      ssl-target-name-override: peer0.producer.example.com
       # These parameters should be set in coordination with the keepalive policy on the server,
       # as incompatible settings can result in closing of connection.
       # When duration of the 'keep-alive-time' is set to 0 or less the keep alive client parameters are disabled
@@ -223,36 +255,16 @@ peers:
 
     tlsCACerts:
       # Certificate location absolute path
-      path: /home/lgao/go/src/github.com/smartlon/gateway/adapter/fabric/network/fixtures/config/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
+      path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/producer.example.com/tlsca/tlsca.producer.example.com-cert.pem
 
-  peer1.org1.example.com:
+  peer0.manufacturer.example.com:
     # this URL is used to send endorsement and query requests
-    url: localhost:8051
-    # eventUrl is only needed when using eventhub (default is delivery service)
-    eventUrl: localhost:8053
-
-    grpcOptions:
-      ssl-target-name-override: peer1.org1.example.com
-      # These parameters should be set in coordination with the keepalive policy on the server,
-      # as incompatible settings can result in closing of connection.
-      # When duration of the 'keep-alive-time' is set to 0 or less the keep alive client parameters are disabled
-      keep-alive-time: 0s
-      keep-alive-timeout: 20s
-      keep-alive-permit: false
-      fail-fast: false
-      # allow-insecure will be taken into consideration if address has no protocol defined, if true then grpc or else grpcs
-      allow-insecure: false
-
-    tlsCACerts:
-      # Certificate location absolute path
-      path: /home/lgao/go/src/github.com/smartlon/gateway/adapter/fabric/network/fixtures/config/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
-
-  peer0.org2.example.com:
     url: localhost:9051
     # eventUrl is only needed when using eventhub (default is delivery service)
     eventUrl: localhost:9053
+
     grpcOptions:
-      ssl-target-name-override: peer0.org2.example.com
+      ssl-target-name-override: peer0.manufacturer.example.com
       # These parameters should be set in coordination with the keepalive policy on the server,
       # as incompatible settings can result in closing of connection.
       # When duration of the 'keep-alive-time' is set to 0 or less the keep alive client parameters are disabled
@@ -264,14 +276,15 @@ peers:
       allow-insecure: false
 
     tlsCACerts:
-      path: /home/lgao/go/src/github.com/smartlon/gateway/adapter/fabric/network/fixtures/config/crypto-config/peerOrganizations/org2.example.com/tlsca/tlsca.org2.example.com-cert.pem
+      # Certificate location absolute path
+      path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/manufacturer.example.com/tlsca/tlsca.manufacturer.example.com-cert.pem
 
-  peer1.org2.example.com:
+  peer0.deliverer.example.com:
     url: localhost:10051
     # eventUrl is only needed when using eventhub (default is delivery service)
     eventUrl: localhost:10053
     grpcOptions:
-      ssl-target-name-override: peer1.org2.example.com
+      ssl-target-name-override: peer0.deliverer.example.com
       # These parameters should be set in coordination with the keepalive policy on the server,
       # as incompatible settings can result in closing of connection.
       # When duration of the 'keep-alive-time' is set to 0 or less the keep alive client parameters are disabled
@@ -283,7 +296,26 @@ peers:
       allow-insecure: false
 
     tlsCACerts:
-      path: /home/lgao/go/src/github.com/smartlon/gateway/adapter/fabric/network/fixtures/config/crypto-config/peerOrganizations/org2.example.com/tlsca/tlsca.org2.example.com-cert.pem
+      path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/deliverer.example.com/tlsca/tlsca.deliverer.example.com-cert.pem
+
+  peer0.retailer.example.com:
+    url: localhost:11051
+    # eventUrl is only needed when using eventhub (default is delivery service)
+    eventUrl: localhost:11053
+    grpcOptions:
+      ssl-target-name-override: peer0.retailer.example.com
+      # These parameters should be set in coordination with the keepalive policy on the server,
+      # as incompatible settings can result in closing of connection.
+      # When duration of the 'keep-alive-time' is set to 0 or less the keep alive client parameters are disabled
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+      # allow-insecure will be taken into consideration if address has no protocol defined, if true then grpc or else grpcs
+      allow-insecure: false
+
+    tlsCACerts:
+      path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/retailer.example.com/tlsca/tlsca.retailer.example.com-cert.pem
 
 #
 # Fabric-CA is a special kind of Certificate Authority provided by Hyperledger Fabric which allows
@@ -291,17 +323,17 @@ peers:
 # Certificate Authority instead of Fabric-CA, in which case this section would not be specified.
 #
 certificateAuthorities:
-  ca.org1.example.com:
-    url: https://ca.org1.example.com:7054
+  caProducer:
+    url: https://caProducer:7054
     tlsCACerts:
       # Comma-Separated list of paths
-      path: /home/lgao/go/src/github.com/smartlon/gateway/adapter/fabric/network/fixtures/config/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
+      path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/producer.example.com/tlsca/tlsca.producer.example.com-cert.pem
       # Client key and cert for SSL handshake with Fabric CA
       client:
         key:
-          path: /home/lgao/go/src/github.com/smartlon/gateway/adapter/fabric/network/fixtures/config/crypto-config/peerOrganizations/org1.example.com/users/User1@org1.example.com/tls/client.key
+          path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/producer.example.com/users/User1@producer.example.com/tls/client.key
         cert:
-          path: /home/lgao/go/src/github.com/smartlon/gateway/adapter/fabric/network/fixtures/config/crypto-config/peerOrganizations/org1.example.com/users/User1@org1.example.com/tls/client.crt
+          path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/producer.example.com/users/User1@producer.example.com/tls/client.crt
 
     # Fabric-CA supports dynamic user enrollment via REST APIs. A "root" user, a.k.a registrar, is
     # needed to enroll and invoke new users.
@@ -309,26 +341,66 @@ certificateAuthorities:
       enrollId: admin
       enrollSecret: adminpw
     # [Optional] The optional name of the CA.
-    caName: ca.org1.example.com
-  ca.org2.example.com:
-    url: https://ca.org2.example.com:8054
+    caName: caProducer
+  caManufacturer:
+    url: https://caProducer:8054
     tlsCACerts:
       # Comma-Separated list of paths
-      path: /home/lgao/go/src/github.com/smartlon/gateway/adapter/fabric/network/fixtures/config/crypto-config/peerOrganizations/org2.example.com/tlsca/tlsca.org2.example.com-cert.pem
+      path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/manufacturer.example.com/tlsca/tlsca.manufacturer.example.com-cert.pem
       # Client key and cert for SSL handshake with Fabric CA
       client:
         key:
-          path: /home/lgao/go/src/github.com/smartlon/gateway/adapter/fabric/network/fixtures/config/crypto-config/peerOrganizations/org2.example.com/users/User1@org2.example.com/tls/client.key
+          path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/manufacturer.example.com/users/User1@manufacturer.example.com/tls/client.key
         cert:
-          path: /home/lgao/go/src/github.com/smartlon/gateway/adapter/fabric/network/fixtures/config/crypto-config/peerOrganizations/org2.example.com/users/User1@org2.example.com/tls/client.crt
+          path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/manufacturer.example.com/users/User1@manufacturer.example.com/tls/client.crt
 
-     # Fabric-CA supports dynamic user enrollment via REST APIs. A "root" user, a.k.a registrar, is
-     # needed to enroll and invoke new users.
+    # Fabric-CA supports dynamic user enrollment via REST APIs. A "root" user, a.k.a registrar, is
+    # needed to enroll and invoke new users.
     registrar:
       enrollId: admin
       enrollSecret: adminpw
     # [Optional] The optional name of the CA.
-    caName: ca.org2.example.com
+    caName: caManufacturer
+
+  caDeliverer:
+    url: https://caProducer:9054
+    tlsCACerts:
+      # Comma-Separated list of paths
+      path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/deliverer.example.com/tlsca/tlsca.deliverer.example.com-cert.pem
+      # Client key and cert for SSL handshake with Fabric CA
+      client:
+        key:
+          path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/deliverer.example.com/users/User1@deliverer.example.com/tls/client.key
+        cert:
+          path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/deliverer.example.com/users/User1@deliverer.example.com/tls/client.crt
+
+    # Fabric-CA supports dynamic user enrollment via REST APIs. A "root" user, a.k.a registrar, is
+    # needed to enroll and invoke new users.
+    registrar:
+      enrollId: admin
+      enrollSecret: adminpw
+    # [Optional] The optional name of the CA.
+    caName: caDeliverer
+
+  caRetailer:
+    url: https://caProducer:10054
+    tlsCACerts:
+      # Comma-Separated list of paths
+      path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/retailer.example.com/tlsca/tlsca.retailer.example.com-cert.pem
+      # Client key and cert for SSL handshake with Fabric CA
+      client:
+        key:
+          path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/retailer.example.com/users/User1@retailer.example.com/tls/client.key
+        cert:
+          path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/retailer.example.com/users/User1@retailer.example.com/tls/client.crt
+
+    # Fabric-CA supports dynamic user enrollment via REST APIs. A "root" user, a.k.a registrar, is
+    # needed to enroll and invoke new users.
+    registrar:
+      enrollId: admin
+      enrollSecret: adminpw
+    # [Optional] The optional name of the CA.
+    caName: caRetailer
 
 entityMatchers:
   peer:
@@ -337,21 +409,21 @@ entityMatchers:
       eventUrlSubstitutionExp: localhost:7053
       sslTargetOverrideUrlSubstitutionExp: peer0.org1.example.com
       mappedHost: peer0.org1.example.com
-    - pattern: peer1.org1.example.com:7151
-      urlSubstitutionExp: localhost:7151
-      eventUrlSubstitutionExp: localhost:7153
-      sslTargetOverrideUrlSubstitutionExp: peer1.org1.example.com
-      mappedHost: peer1.org1.example.com
-    - pattern: peer0.org2.example.com:8051
-      urlSubstitutionExp: localhost:8051
-      eventUrlSubstitutionExp: localhost:8053
-      sslTargetOverrideUrlSubstitutionExp: peer0.org2.example.com
-      mappedHost: peer0.org2.example.com
-    - pattern: peer1.org2.example.com:9051
+    - pattern: peer0.org1.example.com:9051
       urlSubstitutionExp: localhost:9051
       eventUrlSubstitutionExp: localhost:9053
-      sslTargetOverrideUrlSubstitutionExp: peer1.org2.example.com
-      mappedHost: peer1.org2.example.com
+      sslTargetOverrideUrlSubstitutionExp: peer0.org1.example.com
+      mappedHost: peer0.org1.example.com
+    - pattern: peer0.org2.example.com:10051
+      urlSubstitutionExp: localhost:10051
+      eventUrlSubstitutionExp: localhost:10053
+      sslTargetOverrideUrlSubstitutionExp: peer0.org2.example.com
+      mappedHost: peer0.org2.example.com
+    - pattern: peer0.org2.example.com:11051
+      urlSubstitutionExp: localhost:11051
+      eventUrlSubstitutionExp: localhost:11053
+      sslTargetOverrideUrlSubstitutionExp: peer0.org2.example.com
+      mappedHost: peer0.org2.example.com
 
   orderer:
     - pattern: orderer.example.com
