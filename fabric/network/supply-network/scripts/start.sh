@@ -20,10 +20,10 @@ docker exec -it cli ./scripts/channel/join-peer.sh peer0 retailer RetailerMSP 11
 
 ## Set the anchor peers for each org in the channel
 echo "Updating anchor peers for producer..."
-updateAnchorPeers 0 1
+docker exec -it cli ./scripts/channel/update-anchor.sh peer0 producer ProducerMSP 7051 1.0
 echo "Updating anchor peers for manufacturer..."
-updateAnchorPeers 0 2
+docker exec -it cli ./scripts/channel/update-anchor.sh peer0 manufacturer ManufacturerMSP 9051 1.0
 echo "Updating anchor peers for deliverer..."
-updateAnchorPeers 0 1
+docker exec -it cli ./scripts/channel/update-anchor.sh peer0 deliverer DelivererMSP 10051 1.0
 echo "Updating anchor peers for retailer..."
-updateAnchorPeers 0 2
+docker exec -it cli ./scripts/channel/update-anchor.sh peer0 retailer RetailerMSP 11051 1.0
