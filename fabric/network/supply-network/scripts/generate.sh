@@ -11,10 +11,10 @@ cryptogen generate --config=./supply-network/crypto-config.yaml --output="./supp
 echo "Generating channel artifacts and genesis block..."
 configtxgen -configPath ./supply-network -profile SupplyOrdererGenesis -outputBlock ./supply-network/channel-artifacts/genesis.block
 configtxgen -configPath ./supply-network -profile SupplyChannel -outputCreateChannelTx ./supply-network/channel-artifacts/channel.tx -channelID $CHANNEL_NAME
-configtxgen -profile SupplyChannel -outputAnchorPeersUpdate ./channel-artifacts/ProducerMSPanchors.tx -channelID $CHANNEL_NAME -asOrg ProducerMSP
-configtxgen -profile SupplyChannel -outputAnchorPeersUpdate ./channel-artifacts/ManufacturerMSPanchors.tx -channelID $CHANNEL_NAME -asOrg ManufacturerMSP
-configtxgen -profile SupplyChannel -outputAnchorPeersUpdate ./channel-artifacts/DelivererMSPanchors.tx -channelID $CHANNEL_NAME -asOrg DelivererMSP
-configtxgen -profile SupplyChannel -outputAnchorPeersUpdate ./channel-artifacts/RetailerMSPanchors.tx -channelID $CHANNEL_NAME -asOrg RetailerMSP
+configtxgen -configPath ./supply-network -profile SupplyChannel -outputAnchorPeersUpdate ./supply-network/channel-artifacts/ProducerMSPanchors.tx -channelID $CHANNEL_NAME -asOrg ProducerMSP
+configtxgen -configPath ./supply-network -profile SupplyChannel -outputAnchorPeersUpdate ./supply-network/channel-artifacts/ManufacturerMSPanchors.tx -channelID $CHANNEL_NAME -asOrg ManufacturerMSP
+configtxgen -configPath ./supply-network -profile SupplyChannel -outputAnchorPeersUpdate ./supply-network/channel-artifacts/DelivererMSPanchors.tx -channelID $CHANNEL_NAME -asOrg DelivererMSP
+configtxgen -configPath ./supply-network -profile SupplyChannel -outputAnchorPeersUpdate ./supply-network/channel-artifacts/RetailerMSPanchors.tx -channelID $CHANNEL_NAME -asOrg RetailerMSP
 
  CURRENT_DIR=$PWD
  cd ./supply-network/base
