@@ -12,5 +12,5 @@ CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypt
 CORE_PEER_ADDRESS=$PEER.$ORG.example.com:$PORT
 CHANNEL_NAME=mychannel
 CORE_PEER_TLS_ENABLED=true
-peer channel update -o orderer.example.com:7050 -c $CHANNEL_NAME -f ./supply-network/channel-artifacts/${CORE_PEER_LOCALMSPID}anchors.tx --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA >&log.txt
+peer channel update -o orderer.example.com:7050 -c $CHANNEL_NAME -f ./channel-artifacts/${CORE_PEER_LOCALMSPID}anchors.tx --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA >&log.txt
 cat log.txt
