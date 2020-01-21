@@ -41,6 +41,7 @@ services:
         - peer0.producer.example.com:/var/hyperledger/production
     ports:
       - 7051:7051
+      - 7053:7053
 
   peer0.manufacturer.example.com:
     container_name: peer0.manufacturer.example.com
@@ -63,6 +64,7 @@ services:
         - peer0.manufacturer.example.com:/var/hyperledger/production
     ports:
       - 9051:9051
+      - 9053:7053
       
   peer0.deliverer.example.com:
     container_name: peer0.deliverer.example.com
@@ -85,6 +87,7 @@ services:
         - peer0.deliverer.example.com:/var/hyperledger/production
     ports:
       - 10051:10051
+      - 10053:7053
       
       
   peer0.retailer.example.com:
@@ -108,6 +111,7 @@ services:
         - peer0.retailer.example.com:/var/hyperledger/production
     ports:
       - 11051:11051
+      - 11053:7053
       
   caProducer:
     image: hyperledger/fabric-ca:$IMAGE_TAG

@@ -1,10 +1,41 @@
 ---
-caname: ca.org1.example.com
-url: https://ca.org1.example.com:7054
-skiptlsvalidation: true
-mspid: Org1MSP
-crypto:
-  family: ecdsa
-  algorithm: P256-SHA256
-  hash: SHA2-256
-filepath: /tem/msp
+caProducer:
+  caname: ca-producer
+  url: https://115.154.137.50:7054
+  skiptlsvalidation: true
+  mspid: ProducerMSP
+  crypto:
+    family: ecdsa
+    algorithm: P256-SHA256
+    hash: SHA2-256
+  filepath: ./caProducer
+caManufacturer:
+  caname: ca-manufacturer
+  url: https://115.154.137.50:8054
+  skiptlsvalidation: true
+  mspid: ManufacturerMSP
+  crypto:
+    family: ecdsa
+    algorithm: P256-SHA256
+    hash: SHA2-256
+  filepath: ./caManufacturer
+caDeliverer:
+  caname: ca-deliverer
+  url: https://115.154.137.50:9054
+  skiptlsvalidation: true
+  mspid: DelivererMSP
+  crypto:
+    family: ecdsa
+    algorithm: P256-SHA256
+    hash: SHA2-256
+  filepath: ./caDeliverer
+caRetailer:
+  caname: ca-retailer
+  url: https://115.154.137.50:10054
+  skiptlsvalidation: true
+  mspid: RetailerMSP
+  crypto:
+    family: ecdsa
+    algorithm: P256-SHA256
+    hash: SHA2-256
+  filepath: ./caRetailer

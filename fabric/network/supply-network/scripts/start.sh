@@ -16,3 +16,14 @@ echo "Joining Manufacturer to channel..."
 docker exec -it cli ./scripts/channel/join-peer.sh peer0 manufacturer ManufacturerMSP 9051 1.0
 echo "Joining Retailer to channel..." 
 docker exec -it cli ./scripts/channel/join-peer.sh peer0 retailer RetailerMSP 11051 1.0
+
+
+## Set the anchor peers for each org in the channel
+echo "Updating anchor peers for producer..."
+updateAnchorPeers 0 1
+echo "Updating anchor peers for manufacturer..."
+updateAnchorPeers 0 2
+echo "Updating anchor peers for deliverer..."
+updateAnchorPeers 0 1
+echo "Updating anchor peers for retailer..."
+updateAnchorPeers 0 2

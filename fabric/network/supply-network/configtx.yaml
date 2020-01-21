@@ -34,6 +34,12 @@ Organizations:
             Admins:
                 Type: Signature
                 Rule: "OR('ProducerMSP.admin')"
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0.producer.example.com
+              Port: 7051
 
     - &Manufacturer
         Name: ManufacturerMSP
@@ -49,7 +55,13 @@ Organizations:
             Admins:
                 Type: Signature
                 Rule: "OR('ManufacturerMSP.admin')"
-                
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0.manufacturer.example.com
+              Port: 9051
+
     - &Deliverer
         Name: DelivererMSP
         ID: DelivererMSP
@@ -64,6 +76,12 @@ Organizations:
             Admins:
                 Type: Signature
                 Rule: "OR('DelivererMSP.admin')"
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0.deliverer.example.com
+              Port: 10051
                 
     - &Retailer
         Name: RetailerMSP
@@ -79,6 +97,12 @@ Organizations:
             Admins:
                 Type: Signature
                 Rule: "OR('RetailerMSP.admin')"
+        AnchorPeers:
+            # AnchorPeers defines the location of peers which can be used
+            # for cross org gossip communication.  Note, this value is only
+            # encoded in the genesis block in the Application section context
+            - Host: peer0.retailer.example.com
+              Port: 11051
 
 Capabilities:
     Channel: &ChannelCapabilities

@@ -1,5 +1,6 @@
 #!/bin/bash
 export IMAGE_TAG=latest
+export CHANNEL_NAME=logchannel
 echo "Generating cryto material for peers..."
 [ -d ./supply-network/crypto-config ] || mkdir ./supply-network/crypto-config
 
@@ -9,7 +10,11 @@ cryptogen generate --config=./supply-network/crypto-config.yaml --output="./supp
 
 echo "Generating channel artifacts and genesis block..."
 configtxgen -configPath ./supply-network -profile SupplyOrdererGenesis -outputBlock ./supply-network/channel-artifacts/genesis.block
-configtxgen -configPath ./supply-network -profile SupplyChannel -outputCreateChannelTx ./supply-network/channel-artifacts/channel.tx -channelID mychannel
+configtxgen -configPath ./supply-network -profile SupplyChannel -outputCreateChannelTx ./supply-network/channel-artifacts/channel.tx -channelID $CHANNEL_NAME
+configtxgen -profile SupplyChannel -outputAnchorPeersUpdate ./channel-artifacts/ProducerMSPanchors.tx -channelID $CHANNEL_NAME -asOrg ProducerMSP
+configtxgen -profile SupplyChannel -outputAnchorPeersUpdate ./channel-artifacts/ManufacturerMSPanchors.tx -channelID $CHANNEL_NAME -asOrg ManufacturerMSP
+configtxgen -profile SupplyChannel -outputAnchorPeersUpdate ./channel-artifacts/DelivererMSPanchors.tx -channelID $CHANNEL_NAME -asOrg DelivererMSP
+configtxgen -profile SupplyChannel -outputAnchorPeersUpdate ./channel-artifacts/RetailerMSPanchors.tx -channelID $CHANNEL_NAME -asOrg RetailerMSP
 
  CURRENT_DIR=$PWD
  cd ./supply-network/base

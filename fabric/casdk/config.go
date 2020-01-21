@@ -22,12 +22,12 @@ type CryptoConfig struct {
 	Hash      string `yaml:"hash"`
 }
 
-func NewCAConfig(path string) (*CAConfig, error) {
+func NewCAConfig(path string) (map[string]CAConfig, error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-	config := new(CAConfig)
+	config := make(map[string]CAConfig)
 	err = yaml.Unmarshal([]byte(data), config)
 	if err != nil {
 		return nil, err
