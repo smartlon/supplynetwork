@@ -53,7 +53,7 @@ func init() {
 func Config() *FabConfig {
 	once.Do(func() {
 		config = &FabConfig{
-			ConfigFile:         "/home/lgao/go/src/github.com/smartlon/gateway/adapter/fabric/network/fixtures/config/config_test.yaml",
+			ConfigFile:         "/home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/fixtures/config/config_test.yaml",
 			UserName:           "",
 			ChainID:            "fabric",
 			ChannelID:          "logchannel",
