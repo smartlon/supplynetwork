@@ -3,10 +3,9 @@ package sdk
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
-	"github.com/smartlon/supplynetwork/log"
 	"github.com/pkg/errors"
-	"sync"
+	"github.com/smartlon/supplynetwork/log"
+	"strings"
 )
 
 // ChaincodeInvoke invoke chaincode
@@ -23,7 +22,7 @@ func ChaincodeInvoke(chaincodeID string, argsArray []Args) (result string, err e
 		log.Errorf("Error while initializing invokeAction: %v", err)
 		return "" , err
 	}
-	var wg sync.WaitGroup
+	//var wg sync.WaitGroup
 	//wg.Add(1)
 	//go listener(action,chaincodeID,&wg)
 
