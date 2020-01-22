@@ -11,7 +11,7 @@ import (
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/event"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/fab"
 	"github.com/pkg/errors"
-	"github.com/smartlon/gateway/adapter/iota/sdk"
+	"github.com/smartlon/supplynetwork/iota/sdk"
 	"strconv"
 	"sync"
 	"time"
