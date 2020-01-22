@@ -186,7 +186,9 @@ func (a *chaincodeInvokeAction) invoke(channelID, chaincodeID string, argsArray 
 			return "", utils.Wrapf(utils.PersistentError, errors.New("error"), "invoke Error received from eventhub for TxID [%s]. Code: %s", response.TransactionID, response.TxValidationCode)
 		}
 	}
+
 	if len(resp) > 0 {
+		log.Infof("response from invoke:%s\n",resp[0])
 		return resp[0], nil
 	}
 	return "", nil

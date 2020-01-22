@@ -24,14 +24,14 @@ func ChaincodeInvoke(chaincodeID string, argsArray []Args) (result string, err e
 		return "" , err
 	}
 	var wg sync.WaitGroup
-	wg.Add(1)
+	//wg.Add(1)
 	//go listener(action,chaincodeID,&wg)
 
 	result, err = action.invoke(Config().ChannelID, chaincodeID, argsArray)
 	if err != nil {
 		log.Errorf("Error while calling action.invoke(): %v", err)
 	}
-	wg.Wait()
+	//wg.Wait()
 	return result, err
 }
 
