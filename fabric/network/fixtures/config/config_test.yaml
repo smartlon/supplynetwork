@@ -404,26 +404,26 @@ certificateAuthorities:
 
 entityMatchers:
   peer:
-    - pattern: peer0.org1.example.com:7051
+    - pattern: peer0.producer.example.com:7051
       urlSubstitutionExp: localhost:7051
       eventUrlSubstitutionExp: localhost:7053
-      sslTargetOverrideUrlSubstitutionExp: peer0.org1.example.com
-      mappedHost: peer0.org1.example.com
-    - pattern: peer0.org1.example.com:9051
+      sslTargetOverrideUrlSubstitutionExp: peer0.producer.example.com
+      mappedHost: peer0.producer.example.com
+    - pattern: peer0.manufacturer.example.com:9051
       urlSubstitutionExp: localhost:9051
       eventUrlSubstitutionExp: localhost:9053
-      sslTargetOverrideUrlSubstitutionExp: peer0.org1.example.com
-      mappedHost: peer0.org1.example.com
-    - pattern: peer0.org2.example.com:10051
+      sslTargetOverrideUrlSubstitutionExp: peer0.manufacturer.example.com
+      mappedHost: peer0.manufacturer.example.com
+    - pattern: peer0.deliverer.example.com:10051
       urlSubstitutionExp: localhost:10051
       eventUrlSubstitutionExp: localhost:10053
-      sslTargetOverrideUrlSubstitutionExp: peer0.org2.example.com
-      mappedHost: peer0.org2.example.com
-    - pattern: peer0.org2.example.com:11051
+      sslTargetOverrideUrlSubstitutionExp: peer0.deliverer.example.com
+      mappedHost: peer0.deliverer.example.com
+    - pattern: peer0.retailer.example.com:11051
       urlSubstitutionExp: localhost:11051
       eventUrlSubstitutionExp: localhost:11053
-      sslTargetOverrideUrlSubstitutionExp: peer0.org2.example.com
-      mappedHost: peer0.org2.example.com
+      sslTargetOverrideUrlSubstitutionExp: peer0.retailer.example.com
+      mappedHost: peer0.retailer.example.com
 
   orderer:
     - pattern: orderer.example.com
