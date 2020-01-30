@@ -6,7 +6,7 @@ import "github.com/smartlon/supplynetwork/fabric/utils"
 
 func init() {
 	var err error
-	err = NewCAClient("./caconfig.yaml", nil)
+	err = NewCAClient("/home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/casdk/caconfig.yaml", nil)
 	if err != nil {
 		panic(err)
 	}
