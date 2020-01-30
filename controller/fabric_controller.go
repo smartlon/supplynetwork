@@ -16,11 +16,6 @@ const (
 
 )
 
-type UserReq struct {
-	UserName string `json:"UserName"`
-	PassWord string `json:"PassWord"`
-}
-
 func (lc *LogisticsController) RequestLogistic(){
 	requestLogisticReqBytes := lc.Ctx.Input.RequestBody
 	code, message, ret := invokeController(requestLogisticReqBytes)

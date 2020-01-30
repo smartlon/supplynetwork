@@ -1,7 +1,8 @@
 ---
 caProducer:
   caname: ca-producer
-  url: https://115.154.137.50:7054
+  orgname: producer
+  url: https://localhost:7054
   skiptlsvalidation: true
   mspid: ProducerMSP
   crypto:
@@ -11,7 +12,8 @@ caProducer:
   filepath: ./caProducer
 caManufacturer:
   caname: ca-manufacturer
-  url: https://115.154.137.50:8054
+  orgname: manufacturer
+  url: https://localhost:8054
   skiptlsvalidation: true
   mspid: ManufacturerMSP
   crypto:
@@ -21,7 +23,8 @@ caManufacturer:
   filepath: ./caManufacturer
 caDeliverer:
   caname: ca-deliverer
-  url: https://115.154.137.50:9054
+  orgname: deliverer
+  url: https://localhost:9054
   skiptlsvalidation: true
   mspid: DelivererMSP
   crypto:
@@ -31,7 +34,8 @@ caDeliverer:
   filepath: ./caDeliverer
 caRetailer:
   caname: ca-retailer
-  url: https://115.154.137.50:10054
+  orgname: retailer
+  url: https://localhost:10054
   skiptlsvalidation: true
   mspid: RetailerMSP
   crypto:

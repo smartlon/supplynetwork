@@ -14,6 +14,7 @@ type CAConfig struct {
 	MspId             string `yaml:"mspid"`
 	FilePath          string `yaml:"filepath"`
 	CaName			  string `yaml:"caname"`
+	OrgName			  string `yaml:"orgname"`
 }
 
 type CryptoConfig struct {

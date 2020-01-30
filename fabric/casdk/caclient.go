@@ -22,12 +22,12 @@ func NewCAClient(path string, transport *http.Transport) (map[string]FabricCACli
 		return nil, err
 	}
 	caClients := make(map[string]FabricCAClient)
-	for k,v := range config {
+	for _,v := range config {
 		caClient,err := NewCaClientFromConfig(v, transport)
 		if err != nil {
 			return nil,err
 		}
-		caClients[k] = *caClient
+		caClients[v.OrgName] = *caClient
 	}
 	return caClients,nil
 }

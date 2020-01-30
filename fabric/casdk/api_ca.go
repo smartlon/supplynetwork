@@ -1,28 +1,30 @@
 package casdk
 
-import (
-	"encoding/json"
-	"fmt"
-	"github.com/pretty66/casdk"
-)
+import "github.com/smartlon/supplynetwork/fabric/utils"
 
-var caClients map[string]casdk.FabricCAClient
-var err error
+var CaClients map[string]FabricCAClient
 
-var filepath string = `D:\go\src\github.com\pretty66\casdk\caconfig.yaml`
-
-func main() {
-
-	caClients, err = casdk.NewCAClient("./caconfig.yaml", nil)
+func init() {
+	var err error
+	CaClients, err = NewCAClient("./caconfig.yaml", nil)
 	if err != nil {
 		panic(err)
 	}
-	for k,client := range caClients {
-		res, err := client.GetCaInfo()
-		if err != nil {
-			fmt.Println(err.Error())
-		}
-		resB,_ := json.Marshal(res)
-		fmt.Printf("key=%s, value=%s\n",k,string(resB))
+}
+
+func EnrollUser(enrollmentId, secret, orgName string) (token, message string, success bool) {
+	enrollReq := CaEnrollmentRequest{
+		EnrollmentId: enrollmentId,
+		Secret:       secret,
 	}
+	_, err := CaClients[orgName].Enroll(enrollReq)
+	if err != nil {
+		return "",err.Error(),false
+	}
+	token,err  = utils.GenerateToken(enrollmentId,orgName)
+	if err != nil {
+		return "",err.Error(),false
+	}
+	message = enrollmentId+ "logined successfully"
+	return token,message,true
 }
