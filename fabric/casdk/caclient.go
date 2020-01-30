@@ -23,6 +23,7 @@ func NewCAClient(path string, transport *http.Transport) ( error) {
 	if err != nil {
 		return err
 	}
+	CaClients = make(map[string]*FabricCAClient)
 	for _,v := range config {
 		caClient,err := NewCaClientFromConfig(v, transport)
 		if err != nil {
