@@ -2,11 +2,11 @@ package casdk
 
 import "github.com/smartlon/supplynetwork/fabric/utils"
 
-var CaClients map[string]FabricCAClient
+
 
 func init() {
 	var err error
-	CaClients, err = NewCAClient("./caconfig.yaml", nil)
+	err = NewCAClient("./caconfig.yaml", nil)
 	if err != nil {
 		panic(err)
 	}

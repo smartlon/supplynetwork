@@ -16,20 +16,21 @@ import (
 	"net/url"
 )
 
-func NewCAClient(path string, transport *http.Transport) (map[string]FabricCAClient, error) {
+var CaClients map[string]*FabricCAClient
+
+func NewCAClient(path string, transport *http.Transport) ( error) {
 	config, err := NewCAConfig(path)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	caClients := make(map[string]FabricCAClient)
 	for _,v := range config {
 		caClient,err := NewCaClientFromConfig(v, transport)
 		if err != nil {
-			return nil,err
+			return err
 		}
-		caClients[v.OrgName] = *caClient
+		CaClients[v.OrgName] = caClient
 	}
-	return caClients,nil
+	return nil
 }
 
 func NewCaClientFromConfig(config CAConfig, transport *http.Transport) (*FabricCAClient, error) {
