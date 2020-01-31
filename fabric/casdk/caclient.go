@@ -11,6 +11,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"github.com/hyperledger/fabric-ca/util"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -377,21 +378,35 @@ func (f *FabricCAClient) Register(identity *Identity, req *CARegistrationRequest
 }
 
 func (f *FabricCAClient) createToken(identity *Identity, request []byte, method, uri string) (string, error) {
-
-	//b64body := B64Encode(request)
-	b64cert := B64Encode(identity.GetPemCert())
-	//b64uri := B64Encode([]byte(uri))
-	//payload := method + "." + b64uri + "." + b64body + "." + b64cert
-	payload :=  string(identity.GetPemCert()) + "." + string(request)
-
-	sig, err := f.Crypto.Sign([]byte(payload), identity.PrivateKey)
+	cert := identity.Certificate
+	bccsp := util.GetDefaultBCCSP()
+	privKey, _, err := util.GetSignerFromCert(cert,bccsp)
 	if err != nil {
-		return "", err
+		return "",err
 	}
-
-	token := b64cert + "." + B64Encode(sig)
-	return token, nil
+	ECtoken, err := util.CreateToken(bccsp, identity.GetPemCert(), privKey, method, uri, request)
+	if err != nil {
+		return "",err
+	}
+	return ECtoken, nil
 }
+
+//func (f *FabricCAClient) createToken(identity *Identity, request []byte, method, uri string) (string, error) {
+//
+//	b64body := B64Encode(request)
+//	b64cert := B64Encode(identity.GetPemCert())
+//	b64uri := B64Encode([]byte(uri))
+//	payload := method + "." + b64uri + "." + b64body + "." + b64cert
+//	//payload :=  string(identity.GetPemCert()) + "." + string(request)
+//
+//	sig, err := f.Crypto.Sign([]byte(payload), identity.PrivateKey)
+//	if err != nil {
+//		return "", err
+//	}
+//
+//	token := b64cert + "." + B64Encode(sig)
+//	return token, nil
+//}
 
 func (f *FabricCAClient) getTransport() *http.Transport {
 	var tr *http.Transport
