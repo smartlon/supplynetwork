@@ -4,9 +4,21 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
+	"github.com/smartlon/supplynetwork/fabric/utils"
 	"github.com/smartlon/supplynetwork/log"
 	"strings"
 )
+
+func EnrollUser(enrollmentId, secret, orgName string) (token, message string, success bool) {
+
+	token,err  := utils.GenerateToken(enrollmentId,orgName)
+	if err != nil {
+		return "",err.Error(),false
+	}
+	message = enrollmentId+ " logined successfully"
+
+	return token,message ,true
+}
 
 // ChaincodeInvoke invoke chaincode
 func ChaincodeInvoke(chaincodeID string, argsArray []Args) (result string, err error)  {

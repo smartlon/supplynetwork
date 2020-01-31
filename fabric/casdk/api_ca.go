@@ -15,7 +15,7 @@ func init() {
 	}
 }
 
-func EnrollUser(enrollmentId, secret, orgName string) (token, message string,cert, priKey []byte, success bool) {
+func EnrollCA(enrollmentId, secret, orgName string) (token, message string,cert, priKey []byte, success bool) {
 	enrollReq := CaEnrollmentRequest{
 		EnrollmentId: enrollmentId,
 		Secret:       secret,

@@ -23,6 +23,7 @@ func init() {
 	//user management
 	beego.Router("/registeruser", &controller.LogisticsController{},"post:RegisterUser")
 	beego.Router("/enrolluser", &controller.LogisticsController{},"post:EnrollUser")
+	beego.Router("/enrollca", &controller.LogisticsController{},"post:EnrollCA")
 	beego.Router("/getalluser", &controller.LogisticsController{},"post:GetAllUser")
 	beego.Router("/revokeuser", &controller.LogisticsController{},"post:RevokeUser")
 

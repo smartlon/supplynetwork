@@ -2,9 +2,9 @@ package controller
 
 import (
 	"crypto/rand"
-	"github.com/smartlon/supplynetwork/fabric/sdk"
 	"encoding/json"
 	"fmt"
+	"github.com/smartlon/supplynetwork/fabric/sdk"
 	"github.com/smartlon/supplynetwork/log"
 	"math/big"
 	"strconv"
@@ -15,6 +15,20 @@ const (
 	CHAINCODEID = "supcc"
 
 )
+
+func (lc *LogisticsController) EnrollUser(){
+	loginUserReqBytes := lc.Ctx.Input.RequestBody
+	var loginUserReq UserReq
+	err := json.Unmarshal(loginUserReqBytes,&loginUserReq)
+	if err != nil {
+		fmt.Println(err.Error())
+		lc.Data["json"] = map[string]interface{}{"success": false,"msg": err.Error(), "token": ""}
+		lc.ServeJSON()
+	}
+	token, msg, success := sdk.EnrollUser(loginUserReq.UserName,loginUserReq.PassWord,loginUserReq.OrgName)
+	lc.Data["json"] = map[string]interface{}{"success": success,"msg": msg, "token": token}
+	lc.ServeJSON()
+}
 
 func (lc *LogisticsController) RequestLogistic(){
 	requestLogisticReqBytes := lc.Ctx.Input.RequestBody

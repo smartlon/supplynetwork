@@ -17,7 +17,7 @@ type UserReq struct {
 	OrgName string `json:"OrgName"`
 }
 
-func verifyToken(ctx *context.Context)(orgName string,err error) {
+func VerifyToken(ctx *context.Context)(orgName string,err error) {
 	if ctx.Input.Header("Authorization") != "" {
 		authorization := ctx.Input.Header("Authorization")
 		token := strings.Split(authorization, " ")[1]
@@ -31,7 +31,7 @@ func verifyToken(ctx *context.Context)(orgName string,err error) {
 	return "",fmt.Errorf("Authorization is empty")
 }
 
-func (lc *LogisticsController) EnrollUser(){
+func (lc *LogisticsController) EnrollCA(){
 	loginUserReqBytes := lc.Ctx.Input.RequestBody
 	var loginUserReq UserReq
 	err := json.Unmarshal(loginUserReqBytes,&loginUserReq)
@@ -40,13 +40,13 @@ func (lc *LogisticsController) EnrollUser(){
 		lc.Data["json"] = map[string]interface{}{"success": false,"msg": err.Error(), "token": "","certpem":"","prikeypem":""}
 		lc.ServeJSON()
 	}
-	token, msg,cert,priKey, success := casdk.EnrollUser(loginUserReq.UserName,loginUserReq.PassWord,loginUserReq.OrgName)
+	token, msg,cert,priKey, success := casdk.EnrollCA(loginUserReq.UserName,loginUserReq.PassWord,loginUserReq.OrgName)
 	lc.Data["json"] = map[string]interface{}{"success": success,"msg": msg, "token": token,"certpem":cert,"prikeypem":priKey}
 	lc.ServeJSON()
 }
 
 func (lc *LogisticsController) GetAllUser(){
-	orgName,err := verifyToken(lc.Ctx)
+	orgName,err := VerifyToken(lc.Ctx)
 	if err != nil {
 		fmt.Println(err.Error())
 		lc.Data["json"] = map[string]interface{}{"success": false,"msg": err.Error(), "user": "","count": 0}
@@ -59,7 +59,7 @@ func (lc *LogisticsController) GetAllUser(){
 }
 
 func (lc *LogisticsController) RevokeUser(){
-	orgName,err := verifyToken(lc.Ctx)
+	orgName,err := VerifyToken(lc.Ctx)
 	if err != nil {
 		fmt.Println(err.Error())
 		lc.Data["json"] = map[string]interface{}{"success": false,"msg": err.Error(), "revokedlist": "","crl":"","count": 0}
@@ -80,7 +80,7 @@ func (lc *LogisticsController) RevokeUser(){
 }
 
 func (lc *LogisticsController) RegisterUser(){
-	orgName,err := verifyToken(lc.Ctx)
+	orgName,err := VerifyToken(lc.Ctx)
 	if err != nil {
 		fmt.Println(err.Error())
 		lc.Data["json"] = map[string]interface{}{"success": false,"msg": err.Error(), "secret": ""}
