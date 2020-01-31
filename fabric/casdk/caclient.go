@@ -387,7 +387,7 @@ func (f *FabricCAClient) createToken(identity *Identity, request []byte, method,
 	if err != nil {
 		return "", err
 	}
-	sk, err := myCSP.KeyImport(priv, &bccsp.ECDSAPrivateKeyImportOpts{Temporary: true})
+	sk, err := myCSP.KeyImport(priv, &bccsp.ECDSAPrivateKeyImportOpts{Temporary: false})
 	if err != nil {
 		return "", err
 	}
