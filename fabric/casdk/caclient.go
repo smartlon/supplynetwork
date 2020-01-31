@@ -512,7 +512,7 @@ func (f *FabricCAClient) GetIdentities(identity *Identity, caName string) (*CALi
 	if err != nil {
 		return nil, err
 	}
-	token, err := f.createToken(identity, nil, httpReq.Method, httpReq.RequestURI)
+	token, err := f.createToken(identity, nil, httpReq.Method, httpReq.URL.RequestURI())
 	if err != nil {
 		return nil, err
 	}
