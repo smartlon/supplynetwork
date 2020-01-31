@@ -20,8 +20,7 @@ type UserReq struct {
 func verifyToken(ctx *context.Context)(orgName string,err error) {
 	if ctx.Input.Header("Authorization") != "" {
 		authorization := ctx.Input.Header("Authorization")
-		log.Info("Authorization: ", authorization)
-		token := strings.Split(authorization, "")[1]
+		token := strings.Split(authorization, " ")[1]
 		log.Info("curernttoken: ", token)
 		orgName, err := utils.GetOrgNameFromValidateToken(token)
 		if err != nil {
