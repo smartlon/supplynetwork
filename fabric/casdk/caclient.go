@@ -2,6 +2,7 @@ package casdk
 
 import (
 	"bytes"
+	"crypto/ecdsa"
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -13,6 +14,8 @@ import (
 	"fmt"
 	"github.com/cloudflare/cfssl/helpers"
 	"github.com/hyperledger/fabric-ca/util"
+	"github.com/hyperledger/fabric/bccsp"
+	"github.com/hyperledger/fabric/bccsp/utils"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -379,17 +382,17 @@ func (f *FabricCAClient) Register(identity *Identity, req *CARegistrationRequest
 }
 
 func (f *FabricCAClient) createToken(identity *Identity, request []byte, method, uri string) (string, error) {
-	bccsp := util.GetDefaultBCCSP()
-	certBytes := identity.GetPemCert()
-	cert,err := helpers.ParseCertificatePEM(certBytes)
+	myCSP := util.GetDefaultBCCSP()
+
+	priv, err := utils.PrivateKeyToDER((identity.PrivateKey).(*ecdsa.PrivateKey))
 	if err != nil {
-		return "",err
+		return "", err
 	}
-	privKey, _, err := util.GetSignerFromCert(cert,bccsp)
+	sk, err := myCSP.KeyImport(priv, &bccsp.ECDSAPrivateKeyImportOpts{Temporary: true})
 	if err != nil {
-		return "",err
+		return "", err
 	}
-	ECtoken, err := util.CreateToken(bccsp, identity.GetPemCert(), privKey, method, uri, request)
+	ECtoken, err := util.CreateToken(myCSP, identity.GetPemCert(), sk, method, uri, request)
 	if err != nil {
 		return "",err
 	}
