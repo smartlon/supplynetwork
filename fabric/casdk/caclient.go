@@ -11,6 +11,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"github.com/cloudflare/cfssl/helpers"
 	"github.com/hyperledger/fabric-ca/util"
 	"io/ioutil"
 	"net/http"
@@ -378,8 +379,12 @@ func (f *FabricCAClient) Register(identity *Identity, req *CARegistrationRequest
 }
 
 func (f *FabricCAClient) createToken(identity *Identity, request []byte, method, uri string) (string, error) {
-	cert := identity.Certificate
 	bccsp := util.GetDefaultBCCSP()
+	certBytes := identity.GetPemCert()
+	cert,err := helpers.ParseCertificatePEM(certBytes)
+	if err != nil {
+		return "",err
+	}
 	privKey, _, err := util.GetSignerFromCert(cert,bccsp)
 	if err != nil {
 		return "",err
