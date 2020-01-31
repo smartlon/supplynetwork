@@ -15,22 +15,29 @@ func init() {
 	}
 }
 
-func EnrollUser(enrollmentId, secret, orgName string) (token, message string, success bool) {
+func EnrollUser(enrollmentId, secret, orgName string) (token, message string,cert, priKey []byte, success bool) {
 	enrollReq := CaEnrollmentRequest{
 		EnrollmentId: enrollmentId,
 		Secret:       secret,
 	}
 	idn, err := CaClients[orgName].Enroll(enrollReq)
-	AdminIdns[orgName]=idn
+	if enrollmentId == "admin" {
+		AdminIdns[orgName]=idn
+	}
 	if err != nil {
-		return "",err.Error(),false
+		return "",err.Error(),nil,nil,false
 	}
 	token,err  = utils.GenerateToken(enrollmentId,orgName)
 	if err != nil {
-		return "",err.Error(),false
+		return "",err.Error(),nil,nil,false
 	}
 	message = enrollmentId+ " logined successfully"
-	return token,message,true
+	cert = idn.GetPemCert()
+	priKey,err = idn.GetPemPrivateKey()
+	if err != nil {
+		return "",err.Error(),nil,nil,false
+	}
+	return token,message,cert,priKey ,true
 }
 
 func RegisterUser(enrollmentId, userType, secret, orgName string)(secretRes, message string, success bool){
@@ -51,24 +58,24 @@ func RegisterUser(enrollmentId, userType, secret, orgName string)(secretRes, mes
 	return secretRes,message,true
 }
 
-func RevokeUser( cert, orgName string)(secretRes, message string, success bool) {
-	serial, aki, err := CaClients[orgName].GetCertSerialAki([]byte(cert))
-	if err != nil {
-		return "",err.Error(),false
-	}
+func RevokeUser( enrollmentId, orgName string)(caRevokeResult *CARevokeResult, message string, success bool) {
+	//serial, aki, err := CaClients[orgName].GetCertSerialAki([]byte(cert))
+	//if err != nil {
+	//	return "",err.Error(),false
+	//}
 	req := CARevocationRequest{
-		//EnrollmentId: "ca5", // 根据注册用户注销其证书
-		Serial: serial,
-		AKI:    aki,
+		EnrollmentId: enrollmentId, // 根据注册用户注销其证书
+		//Serial: serial,
+		//AKI:    aki,
 		GenCRL: true,
 	}
 	idn := AdminIdns[orgName]
-	_, err = CaClients[orgName].Revoke(idn, &req)
+	caRevokeResult, err := CaClients[orgName].Revoke(idn, &req)
 	if err != nil {
-		return "",err.Error(),false
+		return &CARevokeResult{},err.Error(),false
 	}
-	message = serial+ " registered successfully"
-	return secretRes,message,true
+	message = enrollmentId+ " revoked successfully"
+	return caRevokeResult,message,true
 }
 
 func GetAllUser(orgName string)(Identities []CaIdentityResponse,message string, success bool)  {

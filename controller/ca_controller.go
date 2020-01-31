@@ -37,11 +37,11 @@ func (lc *LogisticsController) EnrollUser(){
 	err := json.Unmarshal(loginUserReqBytes,&loginUserReq)
 	if err != nil {
 		fmt.Println(err.Error())
-		lc.Data["json"] = map[string]interface{}{"success": false,"msg": err.Error(), "token": ""}
+		lc.Data["json"] = map[string]interface{}{"success": false,"msg": err.Error(), "token": "","certpem":"","prikeypem":""}
 		lc.ServeJSON()
 	}
-	token, msg, success := casdk.EnrollUser(loginUserReq.UserName,loginUserReq.PassWord,loginUserReq.OrgName)
-	lc.Data["json"] = map[string]interface{}{"success": success,"msg": msg, "token": token}
+	token, msg,cert,priKey, success := casdk.EnrollUser(loginUserReq.UserName,loginUserReq.PassWord,loginUserReq.OrgName)
+	lc.Data["json"] = map[string]interface{}{"success": success,"msg": msg, "token": token,"certpem":cert,"prikeypem":priKey}
 	lc.ServeJSON()
 }
 
@@ -49,11 +49,33 @@ func (lc *LogisticsController) GetAllUser(){
 	orgName,err := verifyToken(lc.Ctx)
 	if err != nil {
 		fmt.Println(err.Error())
-		lc.Data["json"] = map[string]interface{}{"success": false,"msg": err.Error(), "user": ""}
+		lc.Data["json"] = map[string]interface{}{"success": false,"msg": err.Error(), "user": "","count": 0}
 		lc.ServeJSON()
 	}
 	allUser, msg, success := casdk.GetAllUser(orgName)
-	lc.Data["json"] = map[string]interface{}{"success": success,"msg": msg, "user": allUser}
+	count := len(allUser)
+	lc.Data["json"] = map[string]interface{}{"success": success,"msg": msg, "user": allUser,"count": count}
+	lc.ServeJSON()
+}
+
+func (lc *LogisticsController) RevokeUser(){
+	orgName,err := verifyToken(lc.Ctx)
+	if err != nil {
+		fmt.Println(err.Error())
+		lc.Data["json"] = map[string]interface{}{"success": false,"msg": err.Error(), "revokedlist": "","crl":"","count": 0}
+		lc.ServeJSON()
+	}
+	revokeUserReqBytes := lc.Ctx.Input.RequestBody
+	var revokeUserReq UserReq
+	err = json.Unmarshal(revokeUserReqBytes,&revokeUserReq)
+	if err != nil {
+		fmt.Println(err.Error())
+		lc.Data["json"] = map[string]interface{}{"success": false,"msg": err.Error(), "revokedlist": "","crl":"","count": 0}
+		lc.ServeJSON()
+	}
+	caRevokeResult, msg, success := casdk.RevokeUser(revokeUserReq.UserName,orgName)
+	count := len(caRevokeResult.RevokedCertificates)
+	lc.Data["json"] = map[string]interface{}{"success": success,"msg": msg, "revokedlist": caRevokeResult.RevokedCertificates,"crl":caRevokeResult.CRL,"count": count}
 	lc.ServeJSON()
 }
 

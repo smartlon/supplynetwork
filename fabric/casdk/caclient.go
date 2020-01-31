@@ -468,7 +468,7 @@ func (f *FabricCAClient) GetIdentity(identity *Identity, id string, caName strin
 		uri.Add("ca", caName)
 		httpReq.URL.RawQuery = uri.Encode()
 	}
-	token, err := f.createToken(identity, nil, httpReq.Method, httpReq.URL.RequestURI())
+	token, err := f.createToken(identity, []byte{}, httpReq.Method, httpReq.URL.RequestURI())
 	if err != nil {
 		return nil, err
 	}
@@ -517,7 +517,7 @@ func (f *FabricCAClient) GetIdentities(identity *Identity, caName string) (*CALi
 		uri.Add("ca", caName)
 		httpReq.URL.RawQuery = uri.Encode()
 	}
-	token, err := f.createToken(identity, nil, httpReq.Method, httpReq.RequestURI)
+	token, err := f.createToken(identity, []byte{}, httpReq.Method, httpReq.RequestURI)
 	if err != nil {
 		return nil, err
 	}
