@@ -512,16 +512,7 @@ func (f *FabricCAClient) GetIdentities(identity *Identity, caName string) (*CALi
 	if err != nil {
 		return nil, err
 	}
-	if len(caName) > 0 {
-		uri := httpReq.URL.Query()
-		uri.Add("ca", caName)
-		httpReq.URL.RawQuery = uri.Encode()
-	}
-	reqBody, err := ioutil.ReadAll(httpReq.Body)
-	if err != nil {
-		return nil, err
-	}
-	token, err := f.createToken(identity, reqBody, httpReq.Method, httpReq.RequestURI)
+	token, err := f.createToken(identity, nil, httpReq.Method, httpReq.RequestURI)
 	if err != nil {
 		return nil, err
 	}
