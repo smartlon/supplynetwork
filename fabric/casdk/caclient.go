@@ -2,7 +2,6 @@ package casdk
 
 import (
 	"bytes"
-	"crypto/ecdsa"
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -12,9 +11,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"github.com/hyperledger/fabric-ca/util"
-	"github.com/hyperledger/fabric/bccsp"
-	"github.com/hyperledger/fabric/bccsp/utils"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -381,39 +377,20 @@ func (f *FabricCAClient) Register(identity *Identity, req *CARegistrationRequest
 }
 
 func (f *FabricCAClient) createToken(identity *Identity, request []byte, method, uri string) (string, error) {
-	myCSP := util.GetDefaultBCCSP()
 
-	priv, err := utils.PrivateKeyToDER((identity.PrivateKey).(*ecdsa.PrivateKey))
+	b64body := B64Encode(request)
+	b64cert := B64Encode(identity.GetPemCert())
+	b64uri := B64Encode([]byte(uri))
+	payload := method + "." + b64uri + "." + b64body + "." + b64cert
+
+	sig, err := f.Crypto.Sign([]byte(payload), identity.PrivateKey)
 	if err != nil {
 		return "", err
 	}
-	sk, err := myCSP.KeyImport(priv, &bccsp.ECDSAPrivateKeyImportOpts{Temporary: false})
-	if err != nil {
-		return "", err
-	}
-	ECtoken, err := util.CreateToken(myCSP, identity.GetPemCert(), sk, method, uri, request)
-	if err != nil {
-		return "",err
-	}
-	return ECtoken, nil
+
+	token := b64cert + "." + B64Encode(sig)
+	return token, nil
 }
-
-//func (f *FabricCAClient) createToken(identity *Identity, request []byte, method, uri string) (string, error) {
-//
-//	b64body := B64Encode(request)
-//	b64cert := B64Encode(identity.GetPemCert())
-//	b64uri := B64Encode([]byte(uri))
-//	payload := method + "." + b64uri + "." + b64body + "." + b64cert
-//	//payload :=  string(identity.GetPemCert()) + "." + string(request)
-//
-//	sig, err := f.Crypto.Sign([]byte(payload), identity.PrivateKey)
-//	if err != nil {
-//		return "", err
-//	}
-//
-//	token := b64cert + "." + B64Encode(sig)
-//	return token, nil
-//}
 
 func (f *FabricCAClient) getTransport() *http.Transport {
 	var tr *http.Transport
