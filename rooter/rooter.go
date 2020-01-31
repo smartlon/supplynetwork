@@ -2,12 +2,10 @@ package rooter
 
 import (
 	"github.com/astaxie/beego"
-	controller "github.com/smartlon/supplynetwork/controller"
-	"github.com/smartlon/supplynetwork/fabric/utils"
+	"github.com/smartlon/supplynetwork/controller"
 )
 
 func init() {
-	beego.InsertFilter("*",beego.BeforeExec,utils.FilterToken)
 	beego.Router("/iota/nodeinfo", &controller.LogisticsController{},"get:GetNodeInfo")
 	beego.Router("/iota/mamtransmit", &controller.LogisticsController{},"post:MAMTransmit")
 	beego.Router("/iota/mamreceive", &controller.LogisticsController{},"post:MAMReceive")
@@ -25,6 +23,7 @@ func init() {
 	//user management
 	beego.Router("/fabric/registeruser", &controller.LogisticsController{},"post:RegisterUser")
 	beego.Router("/login", &controller.LogisticsController{},"post:EnrollUser")
+	beego.Router("/getalluser", &controller.LogisticsController{},"post:GetAllUser")
 
 
 }

@@ -16,14 +16,13 @@ import (
 	"net/url"
 )
 
-var CaClients map[string]*FabricCAClient
+
 
 func NewCAClient(path string, transport *http.Transport) ( error) {
 	config, err := NewCAConfig(path)
 	if err != nil {
 		return err
 	}
-	CaClients = make(map[string]*FabricCAClient)
 	for _,v := range config {
 		caClient,err := NewCaClientFromConfig(v, transport)
 		if err != nil {

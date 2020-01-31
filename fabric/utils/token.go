@@ -102,6 +102,24 @@ func GenerateToken(username,issuer string) (tokenString string,err error) {
 
 }
 
+func GetOrgNameFromValidateToken(tokenString string) (string, error) {
+	token, err := jwt.ParseWithClaims(
+		tokenString,
+		&MyCustomClaims{},
+		func(token *jwt.Token)(interface{}, error) {
+			return []byte(SECRET), nil
+		})
+	claims, ok := token.Claims.(*MyCustomClaims)
+	if  ok && token.Valid {
+		fmt.Printf("%v %v", claims.User, claims.StandardClaims.ExpiresAt)
+		fmt.Println("token will be expired at ", time.Unix(claims.StandardClaims.ExpiresAt, 0))
+	} else {
+		fmt.Println("validate tokenString failed !!!",err)
+		return "",err
+	}
+	return claims.User.Orgname,nil
+}
+
 // return this result to client then all later request should have header "Authorization: Bearer <token> "
 func getHeaderTokenValue(tokenString string) string {
 	//Authorization: Bearer <token>
