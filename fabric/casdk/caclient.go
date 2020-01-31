@@ -378,10 +378,11 @@ func (f *FabricCAClient) Register(identity *Identity, req *CARegistrationRequest
 
 func (f *FabricCAClient) createToken(identity *Identity, request []byte, method, uri string) (string, error) {
 
-	b64body := B64Encode(request)
+	//b64body := B64Encode(request)
 	b64cert := B64Encode(identity.GetPemCert())
-	b64uri := B64Encode([]byte(uri))
-	payload := method + "." + b64uri + "." + b64body + "." + b64cert
+	//b64uri := B64Encode([]byte(uri))
+	//payload := method + "." + b64uri + "." + b64body + "." + b64cert
+	payload :=  string(identity.GetPemCert()) + "." + string(request)
 
 	sig, err := f.Crypto.Sign([]byte(payload), identity.PrivateKey)
 	if err != nil {
