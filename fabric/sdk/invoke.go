@@ -22,9 +22,9 @@ func newChaincodeInvokeAction() (*chaincodeInvokeAction, error) {
 	return action, err
 }
 
-func (a *chaincodeInvokeAction) invoke(channelID, chaincodeID string, argsArray []Args) (string, error) {
+func (a *chaincodeInvokeAction) invoke(channelID, chaincodeID string, argsArray []Args,orgName,userName string) (string, error) {
 	a.Set(channelID, chaincodeID, argsArray)
-	channelClient, err := a.ChannelClient()
+	channelClient, err := a.ChannelClient(orgName,userName)
 	if err != nil {
 		return "", errors.Errorf("Error getting channel client: %v", err)
 	}

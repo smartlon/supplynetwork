@@ -9,9 +9,21 @@ import (
 	"strings"
 )
 
-func EnrollUser(enrollmentId, secret, orgName string) (token, message string, success bool) {
+var action *chaincodeInvokeAction
+var err error
+func init() {
+	action, err = newChaincodeInvokeAction()
+	if err != nil {
+		log.Infof(err.Error())
+	}
+}
 
-	token,err  := utils.GenerateToken(enrollmentId,orgName)
+func EnrollUser(enrollmentId, secret, orgName string) (token, message string, success bool) {
+	_, err:= action.newUser(orgName,enrollmentId,secret)
+	if err != nil {
+		return "",err.Error(),false
+	}
+	token,err  = utils.GenerateToken(enrollmentId,orgName)
 	if err != nil {
 		return "",err.Error(),false
 	}
@@ -21,14 +33,12 @@ func EnrollUser(enrollmentId, secret, orgName string) (token, message string, su
 }
 
 // ChaincodeInvoke invoke chaincode
-func ChaincodeInvoke(chaincodeID string, argsArray []Args) (result string, err error)  {
+func ChaincodeInvoke(chaincodeID string, argsArray []Args,orgName,userName string) (result string, err error)  {
 	log.Info("chaincode invoke...")
 	if chaincodeID == "" {
 		err = fmt.Errorf("must specify the chaincode ID")
 		return "" , err
 	}
-	action, err := newChaincodeInvokeAction()
-	defer action.Terminate()
 	action.Set(Config().ChannelID,chaincodeID,[]Args{})
 	if err != nil {
 		log.Errorf("Error while initializing invokeAction: %v", err)
@@ -38,7 +48,7 @@ func ChaincodeInvoke(chaincodeID string, argsArray []Args) (result string, err e
 	//wg.Add(1)
 	//go listener(action,chaincodeID,&wg)
 
-	result, err = action.invoke(Config().ChannelID, chaincodeID, argsArray)
+	result, err = action.invoke(Config().ChannelID, chaincodeID, argsArray,orgName,userName)
 	if err != nil {
 		log.Errorf("Error while calling action.invoke(): %v", err)
 	}

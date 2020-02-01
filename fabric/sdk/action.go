@@ -161,8 +161,8 @@ func (action *Action) EndpointConfig() fab.EndpointConfig {
 }
 
 // ChannelClient creates a new channel client
-func (action *Action) ChannelClient(...channel.ClientOption) (*channel.Client, error) {
-	user, err := action.User()
+func (action *Action) ChannelClient(orgName,userName string, clientOption ...channel.ClientOption) (*channel.Client, error) {
+	user, err := action.User(orgName,userName)
 	if err != nil {
 		return nil, errors.Errorf("error getting user: %s", err)
 	}
@@ -394,12 +394,14 @@ func (action *Action) GetOrgID(mspID string) (string, error) {
 }
 
 // User returns the enrolled user. If the user doesn't exist then a new user is enrolled.
-func (action *Action) User() (mspapi.SigningIdentity, error) {
-	userName := Config().UserName
+func (action *Action) User(orgName,userName string) (mspapi.SigningIdentity, error) {
 	if userName == "" {
-		userName = adminUser
+		return nil, errors.Errorf("userName is nil")
 	}
-	return action.OrgUser(action.OrgID(), userName)
+	if orgName == "" {
+		return nil, errors.Errorf("orgName is nil")
+	}
+	return action.OrgUser(orgName, userName)
 }
 
 func (action *Action) newUser(orgID, username, pwd string) (mspapi.SigningIdentity, error) {

@@ -31,40 +31,70 @@ func (lc *LogisticsController) EnrollUser(){
 }
 
 func (lc *LogisticsController) RequestLogistic(){
+	orgName,userName,err := VerifyToken(lc.Ctx)
+	if err != nil {
+		lc.Data["json"] = map[string]interface{}{"code": 201,"msg": err.Error(), "data": ""}
+		lc.ServeJSON()
+	}
 	requestLogisticReqBytes := lc.Ctx.Input.RequestBody
-	code, message, ret := invokeController(requestLogisticReqBytes)
+	code, message, ret := invokeController(requestLogisticReqBytes,orgName ,userName)
         
 	lc.Data["json"] = map[string]interface{}{"code": code,"msg": message, "data": ret}
 	lc.ServeJSON()
 }
 func (lc *LogisticsController) TransitLogistics(){
+	orgName,userName,err := VerifyToken(lc.Ctx)
+	if err != nil {
+		lc.Data["json"] = map[string]interface{}{"code": 201,"msg": err.Error(), "data": ""}
+		lc.ServeJSON()
+	}
 	transitLogisticReqBytes := lc.Ctx.Input.RequestBody
-	code, message, ret := invokeController(transitLogisticReqBytes)
+	code, message, ret := invokeController(transitLogisticReqBytes,orgName ,userName)
 	lc.Data["json"] = map[string]interface{}{"code": code,"msg": message, "data": ret}
 	lc.ServeJSON()
 }
 func (lc *LogisticsController) DeliveryLogistics(){
+	orgName,userName,err := VerifyToken(lc.Ctx)
+	if err != nil {
+		lc.Data["json"] = map[string]interface{}{"code": 201,"msg": err.Error(), "data": ""}
+		lc.ServeJSON()
+	}
 	deliveryLogisticReqBytes := lc.Ctx.Input.RequestBody
-	code, message, ret := invokeController(deliveryLogisticReqBytes)
+	code, message, ret := invokeController(deliveryLogisticReqBytes,orgName ,userName)
 	lc.Data["json"] = map[string]interface{}{"code": code,"msg": message, "data": ret}
 	lc.ServeJSON()
 }
 func (lc *LogisticsController) QueryLogistics(){
+	orgName,userName,err := VerifyToken(lc.Ctx)
+	if err != nil {
+		lc.Data["json"] = map[string]interface{}{"code": 201,"msg": err.Error(), "data": ""}
+		lc.ServeJSON()
+	}
 	queryLogisticReqBytes := lc.Ctx.Input.RequestBody
-	code, message, ret := invokeController(queryLogisticReqBytes)
+	code, message, ret := invokeController(queryLogisticReqBytes,orgName ,userName)
 	lc.Data["json"] = map[string]interface{}{"code": code,"msg": message, "data": ret}
 	lc.ServeJSON()
 }
 
 func (lc *LogisticsController) RecordContainer(){
+	orgName,userName,err := VerifyToken(lc.Ctx)
+	if err != nil {
+		lc.Data["json"] = map[string]interface{}{"code": 201,"msg": err.Error(), "data": ""}
+		lc.ServeJSON()
+	}
 	recordContainerReqBytes := lc.Ctx.Input.RequestBody
-	code, message, ret := invokeController(recordContainerReqBytes)
+	code, message, ret := invokeController(recordContainerReqBytes,orgName ,userName)
 	lc.Data["json"] = map[string]interface{}{"code": code,"msg": message, "data": ret}
 	lc.ServeJSON()
 }
 func (lc *LogisticsController) QueryContainer(){
+	orgName,userName,err := VerifyToken(lc.Ctx)
+	if err != nil {
+		lc.Data["json"] = map[string]interface{}{"code": 201,"msg": err.Error(), "data": ""}
+		lc.ServeJSON()
+	}
 	queryContainerReqBytes := lc.Ctx.Input.RequestBody
-	code, message, ret := invokeController(queryContainerReqBytes)
+	code, message, ret := invokeController(queryContainerReqBytes,orgName ,userName)
 	lc.Data["json"] = map[string]interface{}{"code": code,"msg": message, "data": ret}
 	lc.ServeJSON()
 }
@@ -82,10 +112,15 @@ type Container struct {
 }
 
 func (lc *LogisticsController) QueryAllContainers(){
+	orgName,userName,err := VerifyToken(lc.Ctx)
+	if err != nil {
+		lc.Data["json"] = map[string]interface{}{"code": 201,"msg": err.Error(), "data": ""}
+		lc.ServeJSON()
+	}
 	queryAllContainersReqBytes := lc.Ctx.Input.RequestBody
-	code, message, ret := invokeController(queryAllContainersReqBytes)
+	code, message, ret := invokeController(queryAllContainersReqBytes,orgName ,userName)
 	var qr []ContainerQueryResponse
-	err := json.Unmarshal([]byte(ret),&qr)
+	err = json.Unmarshal([]byte(ret),&qr)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -127,10 +162,15 @@ type MAMChannel struct {
 	SideKey           string       `json:"SideKey"`
 }
 func (lc *LogisticsController) QueryAllLogistics(){
+	orgName,userName,err := VerifyToken(lc.Ctx)
+	if err != nil {
+		lc.Data["json"] = map[string]interface{}{"code": 201,"msg": err.Error(), "data": ""}
+		lc.ServeJSON()
+	}
 	queryAllLogisticsReqBytes := lc.Ctx.Input.RequestBody
-	code, message, ret := invokeController(queryAllLogisticsReqBytes)
+	code, message, ret := invokeController(queryAllLogisticsReqBytes,orgName,userName)
 	var qr []logisticstransQueryResponse
-	err := json.Unmarshal([]byte(ret),&qr)
+	err = json.Unmarshal([]byte(ret),&qr)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -144,7 +184,7 @@ func (lc *LogisticsController) QueryAllLogistics(){
 }
 
 
-func invokeController(invokeReqBytes []byte)(code int, message, ret string){
+func invokeController(invokeReqBytes []byte,orgName, userName string)(code int, message, ret string){
 	var invokeReq sdk.Args
 	err := json.Unmarshal(invokeReqBytes,&invokeReq)
 	if err != nil {
@@ -170,7 +210,7 @@ func invokeController(invokeReqBytes []byte)(code int, message, ret string){
 	var argsArray []sdk.Args
 	argsArray = append(argsArray, invokeReq)
 
-	ret, err = sdk.ChaincodeInvoke(CHAINCODEID, argsArray)
+	ret, err = sdk.ChaincodeInvoke(CHAINCODEID, argsArray,orgName,userName)
 	if err != nil {
 		log.Error(err)
 		message = err.Error()
