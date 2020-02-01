@@ -15,6 +15,7 @@ type UserReq struct {
 	PassWord string `json:"PassWord"`
 	UserType string `json:"UserType"`
 	OrgName string `json:"OrgName"`
+	Affiliation string `json:"Affiliation"`
 }
 
 func VerifyToken(ctx *context.Context)(orgName, usernName string,err error) {
@@ -94,7 +95,7 @@ func (lc *LogisticsController) RegisterUser(){
 		lc.Data["json"] = map[string]interface{}{"success": false,"msg": err.Error(), "secret": ""}
 		lc.ServeJSON()
 	}
-	secret, msg, success := casdk.RegisterUser(registerUserReq.UserName,registerUserReq.UserType,registerUserReq.PassWord,orgName)
+	secret, msg, success := casdk.RegisterUser(registerUserReq.UserName,registerUserReq.UserType,registerUserReq.PassWord,registerUserReq.Affiliation,orgName)
 	lc.Data["json"] = map[string]interface{}{"success": success,"msg": msg, "secret": secret}
 	lc.ServeJSON()
 }

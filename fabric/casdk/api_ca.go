@@ -40,12 +40,13 @@ func EnrollCA(enrollmentId, secret, orgName string) (token, message string,cert,
 	return token,message,cert,priKey ,true
 }
 
-func RegisterUser(enrollmentId, userType, secret, orgName string)(secretRes, message string, success bool){
+func RegisterUser(enrollmentId, userType, secret,affiliation string, orgName string)(secretRes, message string, success bool){
 	req := CARegistrationRequest{
 		EnrolmentId:    enrollmentId,
 		Type:           userType,
 		Secret:         secret,
 		MaxEnrollments: -1,
+		Affiliation:  affiliation,
 		Attrs:          nil,
 		CAName:         CaClients[orgName].ServerInfo.CAName,
 	}
