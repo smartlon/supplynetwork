@@ -213,9 +213,9 @@ func (action *Action) LocalContext() (context.Local, error) {
 }
 
 // ChannelProvider returns the ChannelProvider
-func (action *Action) ChannelProvider() (context.ChannelProvider, error) {
+func (action *Action) ChannelProvider(orgName,userName string) (context.ChannelProvider, error) {
 	channelID := action.ChannelID
-	user, err := action.User()
+	user, err := action.OrgUser(orgName, userName)
 	if err != nil {
 		return nil, err
 	}
@@ -231,8 +231,8 @@ func (action *Action) ChannelProvider() (context.ChannelProvider, error) {
 }
 
 // EventClient returns the event hub.
-func (action *Action) EventClient(opts ...event.ClientOption) (*event.Client, error) {
-	channelProvider, err := action.ChannelProvider()
+func (action *Action) EventClient(orgName,userName string,opts ...event.ClientOption) (*event.Client, error) {
+	channelProvider, err := action.ChannelProvider(orgName,userName)
 	if err != nil {
 		return nil, errors.Errorf("error creating channel provider: %v", err)
 	}
@@ -244,8 +244,8 @@ func (action *Action) EventClient(opts ...event.ClientOption) (*event.Client, er
 }
 
 // LedgerClient returns the Fabric client for the current user
-func (action *Action) LedgerClient() (*ledger.Client, error) {
-	channelProvider, err := action.ChannelProvider()
+func (action *Action) LedgerClient(orgName,userName string) (*ledger.Client, error) {
+	channelProvider, err := action.ChannelProvider(orgName,userName)
 	if err != nil {
 		return nil, errors.Errorf("error creating channel provider: %v", err)
 	}

@@ -26,9 +26,9 @@ type IotaPayload struct {
 	SideKey     string `json:"SideKey"`
 }
 
-func  listener(action *chaincodeInvokeAction,chaincode string,wg *sync.WaitGroup) error {
+func  Listener(action *chaincodeInvokeAction,chaincode string,orgName,userName string,wg *sync.WaitGroup) error {
 	defer 	wg.Done()
-	ec, err := action.EventClient(event.WithBlockEvents())
+	ec, err := action.EventClient(orgName,userName,event.WithBlockEvents())
 	if err != nil {
 		fmt.Println("failed to create client")
 		return err
