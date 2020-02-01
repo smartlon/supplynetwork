@@ -1,7 +1,6 @@
 package sdk
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/smartlon/supplynetwork/fabric/utils"
@@ -57,7 +56,7 @@ func ChaincodeInvoke(chaincodeID string, argsArray []Args,orgName,userName strin
 }
 
 // ChaincodeInvokeByString call chaincode invoke of hyperledger fabric
-func ChaincodeInvokeByString(chaincodeID, argsStr string) string {
+func ChaincodeInvokeByString(chaincodeID, argsStr string,orgName,userName string) string {
 	log.Infof("chaincode invoke: %s; %s; %s", chaincodeID, argsStr)
 	arg, err := ParseArgs(argsStr)
 	//if strings.EqualFold(arg.Func, "create") {
@@ -67,7 +66,7 @@ func ChaincodeInvokeByString(chaincodeID, argsStr string) string {
 		var argsArray []Args
 		argsArray = append(argsArray, *arg)
 		var ret string
-		ret, err = ChaincodeInvoke(chaincodeID, argsArray)
+		ret, err = ChaincodeInvoke(chaincodeID, argsArray,orgName,userName)
 		if err == nil {
 			log.Info("chaincode invoke result: ", ret)
 			return ret
@@ -78,7 +77,7 @@ func ChaincodeInvokeByString(chaincodeID, argsStr string) string {
 }
 
 // ChaincodeQuery call chaincode query of hyperledger fabric
-func ChaincodeQuery(chaincodeID string, argsArray []Args) (result string, err error) {
+func ChaincodeQuery(chaincodeID string, argsArray []Args,orgName,userName string) (result string, err error) {
 	log.Info("chaincode query...")
 	if chaincodeID == "" {
 		err = fmt.Errorf("must specify the chaincode ID")
@@ -93,7 +92,7 @@ func ChaincodeQuery(chaincodeID string, argsArray []Args) (result string, err er
 
 	defer action.Terminate()
 
-	result, err = action.query(Config().ChannelID, chaincodeID, argsArray)
+	result, err = action.query(Config().ChannelID, chaincodeID, argsArray,orgName,userName)
 	if err != nil {
 		log.Errorf("Error while running queryAction: %v", err)
 	} else if result == "" {
@@ -108,12 +107,12 @@ func ChaincodeQuery(chaincodeID string, argsArray []Args) (result string, err er
 }
 
 // ChaincodeQueryByString call chaincode query of hyperledger fabric
-func ChaincodeQueryByString(chaincodeID, argsStr string) string {
+func ChaincodeQueryByString(chaincodeID, argsStr string,orgName,userName string) string {
 	log.Infof("chaincode query: %s; %s; %s", chaincodeID, argsStr)
 	argsArray, err := ArgsArray(argsStr)
 	if err == nil {
 		var ret string
-		ret, err = ChaincodeQuery(chaincodeID, argsArray)
+		ret, err = ChaincodeQuery(chaincodeID, argsArray,orgName,userName )
 		if err == nil {
 			log.Info("chaincode query result: ", ret)
 			return ret
@@ -154,28 +153,6 @@ type BlockRegister struct {
 	Txs    []*TxRegister `json:"transactions,omitempty"`
 }
 
-// RegisterBlock register block of source chain into hyperledger fabric
-func RegisterBlock(block *BlockRegister) string {
-	var err error
-	var bytes []byte
-	if bytes, err = json.Marshal(block); err != nil {
-		log.Errorf("register block error: %v", err)
-		return defaultResultJSON
-	}
-	a := Args{
-		Func: "register",
-		Args: []string{"block", string(bytes)}}
-	var args []Args
-	args = append(args, a)
-	var ret string
-	ret, err = ChaincodeInvoke("wallet", args)
-	if err != nil {
-		log.Errorf("register block error: %v", err)
-		return defaultResultJSON
-	}
-	log.Info(ret)
-	return ret
-}
 
 
 

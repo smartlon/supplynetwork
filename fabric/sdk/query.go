@@ -20,10 +20,10 @@ func newQueryAction() (*queryAction, error) {
 	return action, err
 }
 
-func (a *queryAction) query(channelID, chaincodeID string, argsArray []Args) (string, error) {
+func (a *queryAction) query(channelID, chaincodeID string, argsArray []Args,orgName,userName string) (string, error) {
 	log.Debug("queryAction.query")
 	a.Set(channelID, chaincodeID, argsArray)
-	channelClient, err := a.ChannelClient()
+	channelClient, err := a.ChannelClient(orgName,userName )
 	if err != nil {
 		return "", errors.Errorf("Error getting channel client: %v", err)
 	}
