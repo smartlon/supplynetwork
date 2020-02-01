@@ -46,9 +46,7 @@ var config *FabConfig
 var peerURL = "localhost:7051,localhost:9051,localhost:10051,localhost:11051"
 var orgIDsStr = ""
 
-func init() {
-	once = &sync.Once{}
-}
+
 // Config get config's singleton
 func Config() *FabConfig {
 	once.Do(func() {

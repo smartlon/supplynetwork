@@ -6,11 +6,13 @@ import (
 	"github.com/smartlon/supplynetwork/fabric/utils"
 	"github.com/smartlon/supplynetwork/log"
 	"strings"
+	"sync"
 )
 
 var action *chaincodeInvokeAction
 var err error
 func init() {
+	once = &sync.Once{}
 	action, err = newChaincodeInvokeAction()
 	if err != nil {
 		log.Infof(err.Error())
