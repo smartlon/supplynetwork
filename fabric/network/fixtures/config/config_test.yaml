@@ -327,7 +327,7 @@ certificateAuthorities:
     url: https://localhost:7054
     tlsCACerts:
       # Comma-Separated list of paths
-      path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/producer.example.com/tlsca/tlsca.producer.example.com-cert.pem
+      path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/producer.example.com/ca/ca.producer.example.com-cert.pem
       # Client key and cert for SSL handshake with Fabric CA
       client:
         key:
@@ -341,12 +341,12 @@ certificateAuthorities:
       enrollId: admin
       enrollSecret: adminpw
     # [Optional] The optional name of the CA.
-    caName: caProducer
+    caName: ca-producer
   caManufacturer:
     url: https://localhost:8054
     tlsCACerts:
       # Comma-Separated list of paths
-      path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/manufacturer.example.com/tlsca/tlsca.manufacturer.example.com-cert.pem
+      path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/manufacturer.example.com/ca/ca.manufacturer.example.com-cert.pem
       # Client key and cert for SSL handshake with Fabric CA
       client:
         key:
@@ -360,13 +360,13 @@ certificateAuthorities:
       enrollId: admin
       enrollSecret: adminpw
     # [Optional] The optional name of the CA.
-    caName: caManufacturer
+    caName: ca-manufacturer
 
   caDeliverer:
     url: https://localhost:9054
     tlsCACerts:
       # Comma-Separated list of paths
-      path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/deliverer.example.com/tlsca/tlsca.deliverer.example.com-cert.pem
+      path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/deliverer.example.com/ca/ca.deliverer.example.com-cert.pem
       # Client key and cert for SSL handshake with Fabric CA
       client:
         key:
@@ -380,13 +380,13 @@ certificateAuthorities:
       enrollId: admin
       enrollSecret: adminpw
     # [Optional] The optional name of the CA.
-    caName: caDeliverer
+    caName: ca-deliverer
 
   caRetailer:
     url: https://localhost:10054
     tlsCACerts:
       # Comma-Separated list of paths
-      path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/retailer.example.com/tlsca/tlsca.retailer.example.com-cert.pem
+      path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/retailer.example.com/ca/ca.retailer.example.com-cert.pem
       # Client key and cert for SSL handshake with Fabric CA
       client:
         key:
@@ -400,7 +400,7 @@ certificateAuthorities:
       enrollId: admin
       enrollSecret: adminpw
     # [Optional] The optional name of the CA.
-    caName: caRetailer
+    caName: ca-retailer
 
 entityMatchers:
   peer:
