@@ -324,7 +324,7 @@ peers:
 #
 certificateAuthorities:
   caProducer:
-    url: https://localhost:7054
+    url: https://ca.producer.example.com:7054
     tlsCACerts:
       # Comma-Separated list of paths
       path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/producer.example.com/ca/ca.producer.example.com-cert.pem
@@ -343,7 +343,7 @@ certificateAuthorities:
     # [Optional] The optional name of the CA.
     caName: ca-producer
   caManufacturer:
-    url: https://localhost:8054
+    url: https://ca.manufacturer.example.com:8054
     tlsCACerts:
       # Comma-Separated list of paths
       path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/manufacturer.example.com/ca/ca.manufacturer.example.com-cert.pem
@@ -363,7 +363,7 @@ certificateAuthorities:
     caName: ca-manufacturer
 
   caDeliverer:
-    url: https://localhost:9054
+    url: https://ca.deliverer.example.com:9054
     tlsCACerts:
       # Comma-Separated list of paths
       path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/deliverer.example.com/ca/ca.deliverer.example.com-cert.pem
@@ -383,7 +383,7 @@ certificateAuthorities:
     caName: ca-deliverer
 
   caRetailer:
-    url: https://localhost:10054
+    url: https://ca.retailer.example.com:10054
     tlsCACerts:
       # Comma-Separated list of paths
       path: /home/lgao/go/src/github.com/smartlon/supplynetwork/fabric/network/supply-network/crypto-config/peerOrganizations/retailer.example.com/ca/ca.retailer.example.com-cert.pem
