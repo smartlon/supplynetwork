@@ -183,6 +183,38 @@ func (lc *LogisticsController) QueryAllLogistics(){
 	lc.ServeJSON()
 }
 
+type ParticipatantQueryResponse struct {
+	Key    string `json:"Key"`
+	Record    Participatant `json:"Record"`
+}
+
+type Participatant struct {
+	UserName string `json:"UserName"`
+	Affiliation string `json:"Affiliation"`
+	Location string `json:"Location"`
+}
+
+func (lc *LogisticsController) QueryAllParticipatant(){
+	orgName,userName,err := VerifyToken(lc.Ctx)
+	if err != nil {
+		lc.Data["json"] = map[string]interface{}{"code": 201,"msg": err.Error(), "data": ""}
+		lc.ServeJSON()
+	}
+	queryAllParticipatantReqBytes := lc.Ctx.Input.RequestBody
+	code, message, ret := invokeController(queryAllParticipatantReqBytes,orgName,userName)
+	var qr []ParticipatantQueryResponse
+	err = json.Unmarshal([]byte(ret),&qr)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	count := len(qr)
+	var resp []Participatant
+	for _,v := range qr {
+		resp = append(resp,v.Record)
+	}
+	lc.Data["json"] = map[string]interface{}{"code": code,"count": count,"msg": message, "data": resp}
+	lc.ServeJSON()
+}
 
 func invokeController(invokeReqBytes []byte,orgName, userName string)(code int, message, ret string){
 	var invokeReq sdk.Args
