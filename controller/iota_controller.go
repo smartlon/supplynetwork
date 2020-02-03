@@ -23,9 +23,14 @@ type MAMReceiveReq struct {
 }
 
 func (lc *LogisticsController) MAMTransmit(){
+	_,_,err := VerifyToken(lc.Ctx)
+	if err != nil {
+		lc.Data["json"] = map[string]interface{}{"code": 201,"msg": err.Error(), "data": ""}
+		lc.ServeJSON()
+	}
 	mamReqBytes := lc.Ctx.Input.RequestBody
 	var mamReq MAMTransmitReq
-	err := json.Unmarshal(mamReqBytes,&mamReq)
+	err = json.Unmarshal(mamReqBytes,&mamReq)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
@@ -54,11 +59,15 @@ func (lc *LogisticsController) MAMTransmit(){
 
 }
 
-
 func (lc *LogisticsController) MAMReceive(){
+	_,_,err := VerifyToken(lc.Ctx)
+	if err != nil {
+		lc.Data["json"] = map[string]interface{}{"code": 201,"msg": err.Error(), "data": ""}
+		lc.ServeJSON()
+	}
 	mamReqBytes := lc.Ctx.Input.RequestBody
 	var mamReq MAMReceiveReq
-	err := json.Unmarshal(mamReqBytes,&mamReq)
+	err = json.Unmarshal(mamReqBytes,&mamReq)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
