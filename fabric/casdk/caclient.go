@@ -558,11 +558,9 @@ func (f *FabricCAClient) AddAffiliations(identity *Identity, request *affliation
 	if err != nil {
 		return "", err
 	}
-	if len(caName) > 0 {
-		uri := httpReq.URL.Query()
-		uri.Add("force", "true")
-		httpReq.URL.RawQuery = uri.Encode()
-	}
+	uri := httpReq.URL.Query()
+	uri.Add("force", "true")
+	httpReq.URL.RawQuery = uri.Encode()
 	token, err := f.createToken(identity, reqJson, httpReq.Method, httpReq.URL.RequestURI())
 	if err != nil {
 		return "", err
