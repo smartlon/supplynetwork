@@ -27,6 +27,6 @@ func init() {
 	beego.Router("/enrollca", &controller.LogisticsController{},"post:EnrollCA")
 	beego.Router("/getalluser", &controller.LogisticsController{},"post:GetAllUser")
 	beego.Router("/revokeuser", &controller.LogisticsController{},"post:RevokeUser")
-
+	beego.Router("/addaffiliation", &controller.LogisticsController{},"post:AddAffiliation")
 
 }

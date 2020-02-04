@@ -178,6 +178,11 @@ type caInfoRequest struct {
 	CaName string `json:"caname,omitempty"`
 }
 
+type affliationRequest struct {
+	Name string `json:"name"`
+	CaName string `json:"caname,omitempty"`
+}
+
 type caInfoResponse struct {
 	caResponse
 	Result caResponseResult `json:"result"`
@@ -254,6 +259,11 @@ type CAListAllIdentitesResponse struct {
 type caListAllIdentities struct {
 	caResponse
 	Result CAListAllIdentitesResponse `json:"result"`
+}
+
+type addAffiliationResponse struct {
+	caResponse
+	result affliationRequest `json:"result"`
 }
 
 type crlResponse struct {

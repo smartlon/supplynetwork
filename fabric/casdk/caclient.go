@@ -545,6 +545,57 @@ func (f *FabricCAClient) GetIdentities(identity *Identity, caName string) (*CALi
 	return nil, fmt.Errorf("non 200 response: %v message is: %s", resp.StatusCode, string(body))
 }
 
+func (f *FabricCAClient) AddAffiliations(identity *Identity, request *affliationRequest) (string, error) {
+	reqJson, err := json.Marshal(request)
+	if err != nil {
+		return "", err
+	}
+	if identity == nil {
+		return "", ErrCertificateEmpty
+	}
+
+	httpReq, err := http.NewRequest("POST", fmt.Sprintf("%s/api/v1/affiliations", f.Url), bytes.NewBuffer(reqJson))
+	if err != nil {
+		return "", err
+	}
+	if len(caName) > 0 {
+		uri := httpReq.URL.Query()
+		uri.Add("force", "true")
+		httpReq.URL.RawQuery = uri.Encode()
+	}
+	token, err := f.createToken(identity, reqJson, httpReq.Method, httpReq.URL.RequestURI())
+	if err != nil {
+		return "", err
+	}
+	httpReq.Header.Set("authorization", token)
+
+	httpClient := &http.Client{Transport: f.getTransport()}
+	resp, err := httpClient.Do(httpReq)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode >= 200 && resp.StatusCode <= 299 {
+		result := new(addAffiliationResponse)
+		if err := json.Unmarshal(body, result); err != nil {
+			return "", err
+		}
+		if !result.Success {
+			return "", concatErrors(result.Errors)
+		}
+		if len(result.Errors) > 0 {
+			return "", concatErrors(result.Errors)
+		}
+		return result.result.Name, nil
+	}
+	return "", fmt.Errorf("non 200 response: %v message is: %s", resp.StatusCode, string(body))
+}
+
 func concatErrors(errs []caResponseErr) error {
 	errors := ""
 	for _, e := range errs {

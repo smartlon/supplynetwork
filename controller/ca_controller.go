@@ -61,6 +61,26 @@ func (lc *LogisticsController) GetAllUser(){
 	lc.ServeJSON()
 }
 
+func (lc *LogisticsController) AddAffiliation(){
+	orgName,_,err := VerifyToken(lc.Ctx)
+	if err != nil {
+		fmt.Println(err.Error())
+		lc.Data["json"] = map[string]interface{}{"success": false,"msg": err.Error(), "Affiliation": ""}
+		lc.ServeJSON()
+	}
+	addAffiliationReqBytes := lc.Ctx.Input.RequestBody
+	var addAffiliationReq UserReq
+	err = json.Unmarshal(addAffiliationReqBytes,&addAffiliationReq)
+	if err != nil {
+		fmt.Println(err.Error())
+		lc.Data["json"] = map[string]interface{}{"success": false,"msg": err.Error(), "Affiliation": ""}
+		lc.ServeJSON()
+	}
+	affiliation, msg, success := casdk.AddAffiliation(addAffiliationReq.Affiliation,orgName)
+	lc.Data["json"] = map[string]interface{}{"success": success,"msg": msg, "Affiliation": affiliation}
+	lc.ServeJSON()
+}
+
 func (lc *LogisticsController) RevokeUser(){
 	orgName,_,err := VerifyToken(lc.Ctx)
 	if err != nil {

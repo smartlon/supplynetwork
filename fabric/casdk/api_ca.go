@@ -59,6 +59,20 @@ func RegisterUser(enrollmentId, userType, secret,affiliation string, orgName str
 	return secretRes,message,true
 }
 
+func AddAffiliation(affiliation string, orgName string)(string,  string,  bool){
+	req := affliationRequest{
+		Name:affiliation,
+		CaName:orgName,
+	}
+	idn := AdminIdns[orgName]
+	affiliation, err := CaClients[orgName].AddAffiliations(idn, &req)
+	if err != nil {
+		return "",err.Error(),false
+	}
+	message := affiliation+ " added successfully"
+	return affiliation,message,true
+}
+
 func RevokeUser( enrollmentId, orgName string)(caRevokeResult *CARevokeResult, message string, success bool) {
 	//serial, aki, err := CaClients[orgName].GetCertSerialAki([]byte(cert))
 	//if err != nil {
