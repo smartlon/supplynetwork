@@ -61,8 +61,8 @@ func RegisterUser(enrollmentId, userType, secret,affiliation string, orgName str
 
 func AddAffiliation(affiliation string, orgName string)(string,  string,  bool){
 	req := affliationRequest{
-		Name:affiliation,
-		CaName:orgName,
+		Name:orgName + "." + affiliation,
+		CaName:"",
 	}
 	idn := AdminIdns[orgName]
 	affiliation, err := CaClients[orgName].AddAffiliations(idn, &req)
