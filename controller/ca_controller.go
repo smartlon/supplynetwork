@@ -117,14 +117,20 @@ func (lc *LogisticsController) RegisterUser(){
 		lc.Data["json"] = map[string]interface{}{"success": false,"msg": err.Error(), "secret": ""}
 		lc.ServeJSON()
 	}
+
 	secret, msg, success := casdk.RegisterUser(registerUserReq.UserName,registerUserReq.UserType,registerUserReq.PassWord,registerUserReq.Affiliation,orgName)
 	if success == true {
-		var invokeReq sdk.Args
-		invokeReq.Func = "RecordParticipatant"
-		invokeReq.Args = []string{registerUserReq.UserName,registerUserReq.Affiliation,registerUserReq.Location}
-		invokeReqAsBytes,_ := json.Marshal(invokeReq)
-		code,_,_ := invokeController(invokeReqAsBytes,orgName,registerUserReq.UserName)
-		if code != 200 {
+		_,_,success := sdk.EnrollUser(registerUserReq.UserName,secret,orgName)
+		if success == true {
+			var invokeReq sdk.Args
+			invokeReq.Func = "RecordParticipatant"
+			invokeReq.Args = []string{registerUserReq.UserName,registerUserReq.Affiliation,registerUserReq.Location}
+			invokeReqAsBytes,_ := json.Marshal(invokeReq)
+			code,_,_ := invokeController(invokeReqAsBytes,orgName,registerUserReq.UserName)
+			if code != 200 {
+				success = false
+			}
+		}else {
 			success = false
 		}
 	}
