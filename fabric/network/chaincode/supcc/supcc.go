@@ -109,8 +109,8 @@ func (t *SmartContract) Init(stub shim.ChaincodeStubInterface) pb.Response {
 
 func (s *SmartContract) RecordParticipant(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	_,_,affiliation , err := ABAC(stub)
-	if len(args) != 2 {
-		return shim.Error("Incorrect number of arguments. Expecting 2")
+	if len(args) != 3 {
+		return shim.Error("Incorrect number of arguments. Expecting 3")
 	}
 	participant := Participant{UserName:args[0],Affiliation:affiliation,Location:args[1]}
 	participantAsBytes,err := json.Marshal(participant)
