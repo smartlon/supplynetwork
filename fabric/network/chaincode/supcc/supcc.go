@@ -70,7 +70,7 @@ type Product struct {
 	Holder  string `json:"Holder"`
 }
 
-type Participatant struct {
+type Participant struct {
 	UserName string `json:"UserName"`
 	Affiliation string `json:"Affiliation"`
 	Location string `json:"Location"`
@@ -107,27 +107,34 @@ func (t *SmartContract) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	return shim.Success(nil)
 }
 
-func (s *SmartContract) RecordParticipatant(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	if len(args) != 3 {
-		return shim.Error("Incorrect number of arguments. Expecting 3")
+func (s *SmartContract) RecordParticipant(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	id,_,affiliation , err := ABAC(stub)
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
 	}
-	participatant := Participatant{UserName:args[0],Affiliation:args[1],Location:args[2]}
-	participatantAsBytes,err := json.Marshal(participatant)
+	participant := Participant{UserName:id,Affiliation:affiliation,Location:args[0]}
+	participantAsBytes,err := json.Marshal(participant)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	participatantID := args[1]+ args[0]
-	err = stub.PutState(participatantID, participatantAsBytes)
+	participantID := affiliation+"."+id
+	participantKey, err := stub.CreateCompositeKey("Participant", []string{"participant", participantID})
 	if err != nil {
-		return shim.Error(fmt.Sprintf("Failed to record participatant: %s", participatantID))
+		return shim.Error(err.Error())
 	}
+	err = stub.PutState(participantKey, participantAsBytes)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("Failed to record participatant: %s", participantKey))
+	}
+	fmt.Printf("- RecordParticipant:\nkey = %s, value = %s\n", participantKey,string(participantAsBytes))
 	return shim.Success(nil)
 }
 
-func (s *SmartContract) QueryAllParticipatant(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	startKey :=  ""
-	endKey :=  ""
-	resultsIterator, err := stub.GetStateByRange(startKey, endKey)
+func (s *SmartContract) QueryAllParticipant(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	resultsIterator, err := stub.GetStateByPartialCompositeKey("Participant", []string{"participant"})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -160,7 +167,7 @@ func (s *SmartContract) QueryAllParticipatant(stub shim.ChaincodeStubInterface, 
 	}
 	buffer.WriteString("]")
 
-	fmt.Printf("- queryAllParticipatant:\n%s\n", buffer.String())
+	fmt.Printf("- queryAllParticipant:\n%s\n", buffer.String())
 	return shim.Success(buffer.Bytes())
 }
 
@@ -263,7 +270,7 @@ func (s *SmartContract) RecordContainer(stub shim.ChaincodeStubInterface, args [
 		return shim.Error(fmt.Sprintf("the user %s is not belong to the deliverer",id))
 	}
 	if len(args) != 6 {
-		return shim.Error("Incorrect number of arguments. Expecting 4")
+		return shim.Error("Incorrect number of arguments. Expecting 6")
 	}
 	holder := affiliation + "." + id
 	container := Container{ ContainerID:args[0],Description: args[1], Location: args[2], Timestamp: args[3], Holder: holder,Used:"false" }
@@ -377,10 +384,10 @@ func (t *SmartContract) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	fun, args := stub.GetFunctionAndParameters()
 	fmt.Println("Arguements for function  ", fun)
 	switch fun {
-	case "RecordParticipatant":
-		return t.RecordParticipatant(stub, args)
-	case "QueryAllParticipatant":
-		return t.QueryAllParticipatant(stub, args)
+	case "RecordParticipant":
+		return t.RecordParticipant(stub, args)
+	case "QueryAllParticipant":
+		return t.QueryAllParticipant(stub, args)
 	case "RecordProduct":
 		return t.RecordProduct(stub, args)
 	case "QueryAllProduct":
@@ -433,21 +440,21 @@ func (t *SmartContract) RequestLogistic(stub shim.ChaincodeStubInterface, args [
 	if err != nil {
 		return shim.Error(fmt.Sprintf("Failed to deliver product: %s", args[1]))
 	}
-	sellerParticipatant := Participatant{}
-	participatantAsBytes,err := stub.GetState(affiliation + "." + id)
-	err = json.Unmarshal(participatantAsBytes,sellerParticipatant)
+	sellerParticipant := Participant{}
+	participantAsBytes,err := stub.GetState(affiliation + "." + id)
+	err = json.Unmarshal(participantAsBytes,sellerParticipant)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	buyerParticipatant := Participatant{}
-	participatantAsBytes,err = stub.GetState(args[2])
-	err = json.Unmarshal(participatantAsBytes,buyerParticipatant)
+	buyerParticipant := Participant{}
+	participantAsBytes,err = stub.GetState(args[2])
+	err = json.Unmarshal(participantAsBytes,buyerParticipant)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	logistiParticipatant := Participatant{}
-	participatantAsBytes,err = stub.GetState(args[3])
-	err = json.Unmarshal(participatantAsBytes,logistiParticipatant)
+	logistiParticipant := Participant{}
+	participantAsBytes,err = stub.GetState(args[3])
+	err = json.Unmarshal(participantAsBytes,logistiParticipant)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -456,11 +463,11 @@ func (t *SmartContract) RequestLogistic(stub shim.ChaincodeStubInterface, args [
 		ProductID: args[1],
 		ProductType: product.ProductType,
 		BuyerID: args[2],
-		BuyerLocation: buyerParticipatant.Location,
+		BuyerLocation: buyerParticipant.Location,
 		SellerID: affiliation + "." + id,
-		SellerLocation: sellerParticipatant.Location,
+		SellerLocation: sellerParticipant.Location,
 		LogisticsID: args[3],
-		LogisticsLocation: logistiParticipatant.Location,
+		LogisticsLocation: logistiParticipant.Location,
 	}
 	logobj.Status = "Requested"
 	logisticsID := args[0]

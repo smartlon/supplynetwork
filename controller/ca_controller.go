@@ -123,8 +123,8 @@ func (lc *LogisticsController) RegisterUser(){
 		_,_,success := sdk.EnrollUser(registerUserReq.UserName,secret,orgName)
 		if success == true {
 			var invokeReq sdk.Args
-			invokeReq.Func = "RecordParticipatant"
-			invokeReq.Args = []string{registerUserReq.UserName,registerUserReq.Affiliation,registerUserReq.Location}
+			invokeReq.Func = "RecordParticipant"
+			invokeReq.Args = []string{registerUserReq.Location}
 			invokeReqAsBytes,_ := json.Marshal(invokeReq)
 			code,_,_ := invokeController(invokeReqAsBytes,orgName,registerUserReq.UserName)
 			if code != 200 {
@@ -138,3 +138,4 @@ func (lc *LogisticsController) RegisterUser(){
 	lc.Data["json"] = map[string]interface{}{"success": success,"msg": msg, "secret": secret}
 	lc.ServeJSON()
 }
+

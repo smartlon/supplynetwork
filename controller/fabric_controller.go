@@ -183,7 +183,7 @@ func (lc *LogisticsController) QueryAllLogistics(){
 	lc.ServeJSON()
 }
 
-type ParticipatantQueryResponse struct {
+type ParticipantQueryResponse struct {
 	Key    string `json:"Key"`
 	Record    Participatant `json:"Record"`
 }
@@ -194,15 +194,15 @@ type Participatant struct {
 	Location string `json:"Location"`
 }
 
-func (lc *LogisticsController) QueryAllParticipatant(){
+func (lc *LogisticsController) QueryAllParticipant(){
 	orgName,userName,err := VerifyToken(lc.Ctx)
 	if err != nil {
 		lc.Data["json"] = map[string]interface{}{"code": 201,"msg": err.Error(), "data": ""}
 		lc.ServeJSON()
 	}
-	queryAllParticipatantReqBytes := lc.Ctx.Input.RequestBody
-	code, message, ret := invokeController(queryAllParticipatantReqBytes,orgName,userName)
-	var qr []ParticipatantQueryResponse
+	queryAllParticipantReqBytes := lc.Ctx.Input.RequestBody
+	code, message, ret := invokeController(queryAllParticipantReqBytes,orgName,userName)
+	var qr []ParticipantQueryResponse
 	err = json.Unmarshal([]byte(ret),&qr)
 	if err != nil {
 		fmt.Println(err.Error())
