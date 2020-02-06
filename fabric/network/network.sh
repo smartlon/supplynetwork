@@ -15,9 +15,12 @@ if [ "$1" == "start" ]; then
     echo "***********************************"
     echo "       Registering users           "
     echo "***********************************"
-    ./supply-network/scripts/register-users.sh
+    #./supply-network/scripts/register-users.sh
 elif [ "$1" == "stop" ]; then
     ./supply-network/scripts/stop.sh
+    docker volume prune
+    docker rm $(docker ps -q -f status=exited)
+    docker rmi $(docker images --filter reference='dev-pee*' -q)
 elif [ "$1" == "install" ]; then
     cd ./chaincode
     npm install
