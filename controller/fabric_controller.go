@@ -239,6 +239,7 @@ func invokeController(invokeReqBytes []byte,orgName, userName string)(code int, 
 		timestamp := timeStamp()
 		invokeReq.Args = append(invokeReq.Args,timestamp)
 	}
+	invokeReq.Args = append(invokeReq.Args,userName)
 	var argsArray []sdk.Args
 	argsArray = append(argsArray, invokeReq)
 

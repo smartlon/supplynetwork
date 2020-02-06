@@ -730,7 +730,7 @@ func (t *SmartContract) DeliveryLogistics(stub shim.ChaincodeStubInterface, args
 	if mspid != "DelivererMSP"{
 		return shim.Error(fmt.Sprintf("the user %s is not belong to the deliverer",id))
 	}
-	if len(args) != 2 {
+	if len(args) != 3 {
 		return shim.Error("Invalid   no of arg for delivery function ")
 
 	}
@@ -877,7 +877,7 @@ func (t *SmartContract) SignLogistics(stub shim.ChaincodeStubInterface, args []s
 
 func (t *SmartContract) QueryLogistics(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
-	if len(args) != 1 {
+	if len(args) != 2 {
 		return shim.Error("Invalid   no of arg for Query function ")
 	}
 	logisticKey, err := stub.CreateCompositeKey("logisticstrans", []string{args[0]})
