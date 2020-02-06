@@ -124,7 +124,7 @@ func (lc *LogisticsController) RegisterUser(){
 		if success == true {
 			var invokeReq sdk.Args
 			invokeReq.Func = "RecordParticipant"
-			invokeReq.Args = []string{registerUserReq.Location}
+			invokeReq.Args = []string{registerUserReq.UserName,registerUserReq.Location}
 			invokeReqAsBytes,_ := json.Marshal(invokeReq)
 			code,_,_ := invokeController(invokeReqAsBytes,orgName,registerUserReq.UserName)
 			if code != 200 {

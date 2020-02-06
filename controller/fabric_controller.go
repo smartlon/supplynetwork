@@ -185,10 +185,10 @@ func (lc *LogisticsController) QueryAllLogistics(){
 
 type ParticipantQueryResponse struct {
 	Key    string `json:"Key"`
-	Record    Participatant `json:"Record"`
+	Record    Participant `json:"Record"`
 }
 
-type Participatant struct {
+type Participant struct {
 	UserName string `json:"UserName"`
 	Affiliation string `json:"Affiliation"`
 	Location string `json:"Location"`
@@ -208,7 +208,7 @@ func (lc *LogisticsController) QueryAllParticipant(){
 		fmt.Println(err.Error())
 	}
 	count := len(qr)
-	var resp []Participatant
+	var resp []Participant
 	for _,v := range qr {
 		resp = append(resp,v.Record)
 	}

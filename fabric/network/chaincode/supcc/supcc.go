@@ -108,33 +108,29 @@ func (t *SmartContract) Init(stub shim.ChaincodeStubInterface) pb.Response {
 }
 
 func (s *SmartContract) RecordParticipant(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	id,_,affiliation , err := ABAC(stub)
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting 1")
+	_,_,affiliation , err := ABAC(stub)
+	if len(args) != 2 {
+		return shim.Error("Incorrect number of arguments. Expecting 2")
 	}
-	participant := Participant{UserName:id,Affiliation:affiliation,Location:args[0]}
+	participant := Participant{UserName:args[0],Affiliation:affiliation,Location:args[1]}
 	participantAsBytes,err := json.Marshal(participant)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	participantID := affiliation+"."+id
-	participantKey, err := stub.CreateCompositeKey("Participant", []string{"participant", participantID})
+	participantKey, err := stub.CreateCompositeKey("Participant", []string{affiliation,args[0]})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 	err = stub.PutState(participantKey, participantAsBytes)
 	if err != nil {
-		return shim.Error(fmt.Sprintf("Failed to record participatant: %s", participantKey))
+		return shim.Error(fmt.Sprintf("Failed to record participant: %s", participantKey))
 	}
 	fmt.Printf("- RecordParticipant:\nkey = %s, value = %s\n", participantKey,string(participantAsBytes))
 	return shim.Success(nil)
 }
 
 func (s *SmartContract) QueryAllParticipant(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	resultsIterator, err := stub.GetStateByPartialCompositeKey("Participant", []string{"participant"})
-	if err != nil {
-		return shim.Error(err.Error())
-	}
+	resultsIterator, err := stub.GetStateByPartialCompositeKey("Participant", []string{})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -201,30 +197,35 @@ func (s *SmartContract) RecordProduct(stub shim.ChaincodeStubInterface, args []s
 	if err != nil {
 		return shim.Error("There was an error trying to retrieve the attribute")
 	}
-	if len(args) != 4 {
-		return shim.Error("Incorrect number of arguments. Expecting 4")
+	if len(args) != 5 {
+		return shim.Error("Incorrect number of arguments. Expecting 5")
 	}
-	holder := affiliation + "." + id
-	productID := holder + "." + args[0]
-	product := Product{ProductID:args[0],ProductType:args[1],Description:args[2],Timestamp:args[3],Holder:holder,Status:"false"}
-
-	productAsBytes, _ := json.Marshal(product)
-	err = stub.PutState(productID, productAsBytes)
+	product := Product{ProductID:args[0],ProductType:args[1],Description:args[2],Timestamp:args[3],Holder:id,Status:"false"}
+	productAsBytes, err := json.Marshal(product)
 	if err != nil {
-		return shim.Error(fmt.Sprintf("Failed to record product: %s", productID))
+		return shim.Error(err.Error())
 	}
+	productKey, err := stub.CreateCompositeKey("Product", []string{affiliation,args[4],args[0]})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	err = stub.PutState(productKey, productAsBytes)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("Failed to record product: %s", productKey))
+	}
+	fmt.Printf("- RecordProduct:\nkey = %s, value = %s\n", productKey,string(productAsBytes))
 	return shim.Success(nil)
 }
 
 func (s *SmartContract) QueryAllProduct(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	id,_,affiliation , err := ABAC(stub)
+	_,_,affiliation , err := ABAC(stub)
 	if err != nil {
 		return shim.Error("There was an error trying to retrieve the attribute")
 	}
-	startKey := affiliation + "." + id + "."  + "product1"
-	endKey := affiliation + "." + id + "." + "product999"
-
-	resultsIterator, err := stub.GetStateByRange(startKey, endKey)
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+	resultsIterator, err := stub.GetStateByPartialCompositeKey("Product", []string{affiliation,args[0]})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -269,27 +270,41 @@ func (s *SmartContract) RecordContainer(stub shim.ChaincodeStubInterface, args [
 	if mspid != "DelivererMSP"{
 		return shim.Error(fmt.Sprintf("the user %s is not belong to the deliverer",id))
 	}
-	if len(args) != 6 {
-		return shim.Error("Incorrect number of arguments. Expecting 6")
+	if len(args) != 7 {
+		return shim.Error("Incorrect number of arguments. Expecting 7")
 	}
-	holder := affiliation + "." + id
-	container := Container{ ContainerID:args[0],Description: args[1], Location: args[2], Timestamp: args[3], Holder: holder,Used:"false" }
-	containerID := holder + "."  + args[0]
-	containerAsBytes, _ := json.Marshal(container)
-	err = stub.PutState(containerID, containerAsBytes)
+	container := Container{ ContainerID:args[0],Description: args[1], Location: args[2], Timestamp: args[3], Holder: id,Used:"false" }
+	containerAsBytes, err := json.Marshal(container)
 	if err != nil {
-		return shim.Error(fmt.Sprintf("Failed to record container: %s", containerID))
+		return shim.Error(err.Error())
+	}
+	containerKey, err := stub.CreateCompositeKey("Container", []string{affiliation,args[6],args[0]})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	err = stub.PutState(containerKey, containerAsBytes)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("Failed to record container: %s", containerKey))
 	}
 
 	mode := "restricted"
 	seed := args[4]
 	sideKey := args[5]
-	iotaID := containerID + "."  + "iotapayload"
-	iotaPayload := IotaPayload{ContainerID:containerID,Seed: seed, MamState: "", Root: "", Mode: mode, SideKey: sideKey}
-	iotaPayloadAsBytes, _ := json.Marshal(iotaPayload)
-	stub.PutState(iotaID, iotaPayloadAsBytes)
-	fmt.Println("New Asset", args[0], container, seed, mode, sideKey)
-
+	iotaPayload := IotaPayload{ContainerID:containerKey,Seed: seed, MamState: "", Root: "", Mode: mode, SideKey: sideKey}
+	iotaPayloadAsBytes, err := json.Marshal(iotaPayload)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	iotaKey, err := stub.CreateCompositeKey("IotaPayload", []string{affiliation,args[6],args[0]})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	err = stub.PutState(iotaKey, iotaPayloadAsBytes)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	fmt.Printf("- RecordProduct:\ncontainer key = %s, value = %s\n", containerKey,string(containerAsBytes))
+	fmt.Printf("- RecordProduct:\nIotaPayload key = %s, value = %s\n", iotaKey,string(iotaPayloadAsBytes))
 	return shim.Success(nil)
 }
 
@@ -301,24 +316,41 @@ func (s *SmartContract) QueryContainer(stub shim.ChaincodeStubInterface, args []
 	if mspid != "DelivererMSP"{
 		return shim.Error(fmt.Sprintf("the user %s is not belong to the deliverer",id))
 	}
-	if len(args) != 1 {
-		return shim.Error("Incorrect number of arguments. Expecting 1")
+	if len(args) != 2 {
+		return shim.Error("Incorrect number of arguments. Expecting 2")
 	}
-	containerID := affiliation + "." + id + "."  + args[0]
-	containerAsBytes, _ := stub.GetState(containerID)
+	containerKey, err := stub.CreateCompositeKey("Container", []string{affiliation,args[1],args[0]})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	containerAsBytes, err := stub.GetState(containerKey)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	if containerAsBytes == nil {
 		return shim.Error("Could not locate container")
 	}
 	container := Container{}
-	json.Unmarshal(containerAsBytes, &container)
-	iotaID := containerID + "."  + "iotapayload"
-	iotaPayloadAsBytes, _ := stub.GetState(iotaID)
+	err = json.Unmarshal(containerAsBytes, &container)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	iotaKey, err := stub.CreateCompositeKey("IotaPayload", []string{affiliation,args[1],args[0]})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	iotaPayloadAsBytes, err := stub.GetState(iotaKey)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	if iotaPayloadAsBytes == nil {
 		return shim.Error("Could not locate IOTA state object")
 	}
 	iotaPayload := IotaPayload{}
-	json.Unmarshal(iotaPayloadAsBytes, &iotaPayload)
-
+	err = json.Unmarshal(iotaPayloadAsBytes, &iotaPayload)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	mamstate := map[string]interface{}{}
 	mamstate["seed"] = iotaPayload.Seed
 	mamstate["root"] = iotaPayload.Root
@@ -326,11 +358,14 @@ func (s *SmartContract) QueryContainer(stub shim.ChaincodeStubInterface, args []
 	out := map[string]interface{}{}
 	out["container"] = container
 	out["mamstate"] = mamstate
-	result, _ := json.Marshal(out)
+	result, err := json.Marshal(out)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	return shim.Success(result)
 }
 
-func (s *SmartContract) QueryAllContainers(stub shim.ChaincodeStubInterface) pb.Response {
+func (s *SmartContract) QueryAllContainers(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	id,mspid,affiliation , err := ABAC(stub)
 	if err != nil {
 		return shim.Error("There was an error trying to retrieve the attribute")
@@ -338,10 +373,10 @@ func (s *SmartContract) QueryAllContainers(stub shim.ChaincodeStubInterface) pb.
 	if mspid != "DelivererMSP"{
 		return shim.Error(fmt.Sprintf("the user %s is not belong to the deliverer",id))
 	}
-	startKey := affiliation + "." + id + "."  +"container1"
-	endKey := affiliation + "." + id + "."  +"container999"
-
-	resultsIterator, err := stub.GetStateByRange(startKey, endKey)
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+	resultsIterator, err := stub.GetStateByPartialCompositeKey("Container", []string{affiliation,args[0]})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -397,7 +432,7 @@ func (t *SmartContract) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	case "QueryContainer":
 		return t.QueryContainer(stub, args)
 	case "QueryAllContainers":
-		return t.QueryAllContainers(stub)
+		return t.QueryAllContainers(stub, args)
 	case "RequestLogistic":
 		return t.RequestLogistic(stub, args)
 	case "TransitLogistics":
@@ -420,40 +455,73 @@ func (t *SmartContract) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 //Genlogistics for
 
 func (t *SmartContract) RequestLogistic(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	id,_,affiliation , err := ABAC(stub)
+	_,_,affiliation , err := ABAC(stub)
 	if err != nil {
 		return shim.Error("There was an error trying to retrieve the attribute")
 	}
-	if len(args) != 4 {
-		return shim.Error("Incorrect number of arguments. Expecting 4")
+	if len(args) != 5 {
+		return shim.Error("Incorrect number of arguments. Expecting 5")
 	}
-	productID := affiliation + "." + id + "."  + args[1]
-	productAsBytes, _ := stub.GetState(productID)
+	productKey, err := stub.CreateCompositeKey("Product", []string{affiliation,args[4],args[1]})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	productAsBytes, err := stub.GetState(productKey)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	if productAsBytes == nil {
 		return shim.Error("Could not locate product")
 	}
 	product := Product{}
-	json.Unmarshal(productAsBytes, &product)
+	err = json.Unmarshal(productAsBytes, &product)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	product.Status = "true"
 	productAsBytes, err = json.Marshal(product)
-	err = stub.PutState(productID, productAsBytes)
 	if err != nil {
-		return shim.Error(fmt.Sprintf("Failed to deliver product: %s", args[1]))
+		return shim.Error(err.Error())
+	}
+	err = stub.PutState(productKey, productAsBytes)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("Failed to deliver product: %s", productKey))
 	}
 	sellerParticipant := Participant{}
-	participantAsBytes,err := stub.GetState(affiliation + "." + id)
+	sellerKey, err := stub.CreateCompositeKey("Participant", []string{affiliation,args[4]})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	participantAsBytes,err  := stub.GetState(sellerKey)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	err = json.Unmarshal(participantAsBytes,sellerParticipant)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 	buyerParticipant := Participant{}
-	participantAsBytes,err = stub.GetState(args[2])
+	buyerKey, err := stub.CreateCompositeKey("Participant", []string{args[2]})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	participantAsBytes,err  = stub.GetState(buyerKey)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	err = json.Unmarshal(participantAsBytes,buyerParticipant)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 	logistiParticipant := Participant{}
-	participantAsBytes,err = stub.GetState(args[3])
+	logistiKey, err := stub.CreateCompositeKey("Participant", []string{args[3]})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	participantAsBytes,err  = stub.GetState(logistiKey)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	err = json.Unmarshal(participantAsBytes,logistiParticipant)
 	if err != nil {
 		return shim.Error(err.Error())
@@ -464,18 +532,25 @@ func (t *SmartContract) RequestLogistic(stub shim.ChaincodeStubInterface, args [
 		ProductType: product.ProductType,
 		BuyerID: args[2],
 		BuyerLocation: buyerParticipant.Location,
-		SellerID: affiliation + "." + id,
+		SellerID: affiliation+args[4],
 		SellerLocation: sellerParticipant.Location,
 		LogisticsID: args[3],
 		LogisticsLocation: logistiParticipant.Location,
 	}
 	logobj.Status = "Requested"
-	logisticsID := args[0]
-	logobjasBytes, _ := json.Marshal(logobj)
-	err = stub.PutState(logisticsID, logobjasBytes)
+	logobjasBytes, err := json.Marshal(logobj)
 	if err != nil {
-		return shim.Error(fmt.Sprintf("Failed to request logistics: %s", logisticsID))
+		return shim.Error(err.Error())
 	}
+	logisticstranKey, err := stub.CreateCompositeKey("logisticstrans", []string{args[0]})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	err = stub.PutState(logisticstranKey, logobjasBytes)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("Failed to request logistics: %s", logisticstranKey))
+	}
+	fmt.Printf("- RequestLogistic:\nlogisticstrans key = %s, value = %s\n", logisticstranKey,string(logobjasBytes))
 	return shim.Success(nil)
 }
 
@@ -488,25 +563,41 @@ func (t *SmartContract) TransitLogistics(stub shim.ChaincodeStubInterface, args 
 	if mspid != "DelivererMSP"{
 		return shim.Error(fmt.Sprintf("the user %s is not belong to the deliverer",id))
 	}
-	if len(args) != 4 {
-		return shim.Error("Incorrect number of arguments. Expecting Minimum 3")
+	if len(args) != 5 {
+		return shim.Error("Incorrect number of arguments. Expecting Minimum 5")
 	}
-	hoder := affiliation + "." + id
-	logisticsAsBytes, _ := stub.GetState(args[0])
+	logisticstranKey, err := stub.CreateCompositeKey("logisticstrans", []string{args[0]})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	logisticsAsBytes, err := stub.GetState(logisticstranKey)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	var logisticobj logisticstrans
 	json.Unmarshal(logisticsAsBytes, &logisticobj)
-	logisticobj.MAMChannel.ContainerID = hoder + "." + args[1]
+
 	sideKey := args[2]
 	logisticobj.MAMChannel.SideKey = sideKey
 	timestamp := args[3]
 	logisticobj.JourneyStartTime = timestamp
-
-	containerAsBytes, _ := stub.GetState(hoder + "." + args[1])
+	containerKey, err := stub.CreateCompositeKey("Container", []string{affiliation,args[4],args[1]})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	logisticobj.MAMChannel.ContainerID = containerKey
+	containerAsBytes, err := stub.GetState(containerKey)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	if containerAsBytes == nil {
 		return shim.Error("Could not locate container")
 	}
 	container := Container{}
-	json.Unmarshal(containerAsBytes, &container)
+	err = json.Unmarshal(containerAsBytes, &container)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	container.Description = args[0]
 	if  container.Used == "true" {
 		return shim.Error("Container is used")
@@ -514,12 +605,22 @@ func (t *SmartContract) TransitLogistics(stub shim.ChaincodeStubInterface, args 
 	container.Used = "true"
 	container.Timestamp = timestamp
 	container.Location = logisticobj.SellerLocation
-	iotaPayloadAsBytes, _ := stub.GetState(hoder + "."+container.ContainerID + "." +"iotapayload" )
+	iotaKey, err := stub.CreateCompositeKey("IotaPayload", []string{affiliation,args[4],args[0]})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	iotaPayloadAsBytes, err := stub.GetState(iotaKey )
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	if iotaPayloadAsBytes == nil {
 		return shim.Error("Could not locate IOTA state object")
 	}
 	iotaPayload := IotaPayload{}
-	json.Unmarshal(iotaPayloadAsBytes, &iotaPayload)
+	err = json.Unmarshal(iotaPayloadAsBytes, &iotaPayload)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	iotaPayload.SideKey=sideKey
 	if logisticobj.Status != "Requested" {
 		fmt.Println("we cannnot transit  the product which was not requested")
@@ -527,12 +628,21 @@ func (t *SmartContract) TransitLogistics(stub shim.ChaincodeStubInterface, args 
 	}
 
 	logisticobj.Status = "Ready-Transit"
-	logisticsAsBytes, _ = json.Marshal(logisticobj)
-	stub.PutState(args[0], logisticsAsBytes)
-	containerAsBytes, _ = json.Marshal(container)
-	stub.PutState(hoder + "." + container.ContainerID, containerAsBytes)
-	iotaPayloadAsBytes, _ = json.Marshal(iotaPayload)
-	stub.PutState(hoder + "."+container.ContainerID + "." +"iotapayload", iotaPayloadAsBytes)
+	logisticsAsBytes, err = json.Marshal(logisticobj)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	stub.PutState(logisticstranKey, logisticsAsBytes)
+	containerAsBytes, err = json.Marshal(container)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	stub.PutState(containerKey, containerAsBytes)
+	iotaPayloadAsBytes, err = json.Marshal(iotaPayload)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	stub.PutState(iotaKey, iotaPayloadAsBytes)
 	err = stub.SetEvent(`{"From":"Fabric","To":"Iota","Func":"CreateChannel"}`, iotaPayloadAsBytes)
 	if err != nil {
 		fmt.Println("Could not set event for loan application creation", err)
@@ -545,25 +655,46 @@ func (t *SmartContract) InTransitLogistics(stub shim.ChaincodeStubInterface, arg
 	if len(args) != 3 {
 		return shim.Error("Incorrect number of arguments. Expecting Minimum 3")
 	}
-	containerAsBytes, _ := stub.GetState(args[0])
+	containerAsBytes, err := stub.GetState(args[0])
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	if containerAsBytes == nil {
 		return shim.Error("Could not locate container")
 	}
 	container := Container{}
-	json.Unmarshal(containerAsBytes, &container)
-	logisticsAsBytes, _ := stub.GetState(container.Description)
-
+	err = json.Unmarshal(containerAsBytes, &container)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	logisticstranKey, err := stub.CreateCompositeKey("logisticstrans", []string{container.Description})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	logisticsAsBytes, err := stub.GetState(logisticstranKey)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	var logisticobj logisticstrans
 	json.Unmarshal(logisticsAsBytes, &logisticobj)
 	logisticobj.LogisticstranID = container.Description
 	logisticobj.MAMChannel.Root = args[1]
-	iotaID := logisticobj.MAMChannel.ContainerID + "."  + "iotapayload"
-	iotaPayloadAsBytes, _ := stub.GetState(iotaID)
+	iotaKey, err := stub.CreateCompositeKey("IotaPayload", []string{strings.TrimLeft(args[0],"Container")})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	iotaPayloadAsBytes, err := stub.GetState(iotaKey)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	if iotaPayloadAsBytes == nil {
 		return shim.Error("Could not locate IOTA state object")
 	}
 	iotaPayload := IotaPayload{}
-	json.Unmarshal(iotaPayloadAsBytes, &iotaPayload)
+	err=json.Unmarshal(iotaPayloadAsBytes, &iotaPayload)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	iotaPayload.Root = args[1]
 	iotaPayload.MamState = args[2]
 	if logisticobj.Status != "Ready-Transit" {
@@ -572,10 +703,22 @@ func (t *SmartContract) InTransitLogistics(stub shim.ChaincodeStubInterface, arg
 	}
 
 	logisticobj.Status = "In-Transit"
-	logisticsAsBytes, _ = json.Marshal(logisticobj)
-	stub.PutState(logisticobj.LogisticstranID, logisticsAsBytes)
-	iotaPayloadAsBytes, _ = json.Marshal(iotaPayload)
-	stub.PutState(iotaID, iotaPayloadAsBytes)
+	logisticsAsBytes, err = json.Marshal(logisticobj)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	err= stub.PutState(logisticstranKey, logisticsAsBytes)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	iotaPayloadAsBytes, err = json.Marshal(iotaPayload)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	err=stub.PutState(iotaKey, iotaPayloadAsBytes)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	return shim.Success(nil)
 }
 
@@ -591,7 +734,14 @@ func (t *SmartContract) DeliveryLogistics(stub shim.ChaincodeStubInterface, args
 		return shim.Error("Invalid   no of arg for delivery function ")
 
 	}
-	logisticsasbytes1, _ := stub.GetState(args[0])
+	logisticstranKey, err := stub.CreateCompositeKey("logisticstrans", []string{args[0]})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	logisticsasbytes1, err := stub.GetState(logisticstranKey)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	var logisticobj1 logisticstrans
 
 	json.Unmarshal(logisticsasbytes1, &logisticobj1)
@@ -603,9 +753,22 @@ func (t *SmartContract) DeliveryLogistics(stub shim.ChaincodeStubInterface, args
 	timestamp := args[1]
 	logisticobj1.JourneyEndTime = timestamp
 	logisticobj1.Status = "Wait-Sign"
-	logisticsasbytes1, _ = json.Marshal(logisticobj1)
-	stub.PutState(args[0], logisticsasbytes1)
-	iotaPayloadAsBytes, _ := stub.GetState(logisticobj1.MAMChannel.ContainerID + "." + "iotapayload" )
+	logisticsasbytes1, err = json.Marshal(logisticobj1)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	err = stub.PutState(logisticstranKey, logisticsasbytes1)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	iotaKey, err := stub.CreateCompositeKey("IotaPayload", []string{strings.TrimLeft(logisticobj1.MAMChannel.ContainerID,"Container")})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	iotaPayloadAsBytes, err := stub.GetState(iotaKey )
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	err = stub.SetEvent(`{"From":"Fabric","To":"Iota","Func":"DeliveryLogistics"}`, iotaPayloadAsBytes)
 	if err != nil {
 		fmt.Println("Could not set event for loan application creation", err)
@@ -619,17 +782,32 @@ func (t *SmartContract) SignLogistics(stub shim.ChaincodeStubInterface, args []s
 		return shim.Error("Invalid   no of arg for Sign function ")
 
 	}
-	containerAsBytes, _ := stub.GetState(args[0])
+	containerAsBytes, err := stub.GetState(args[0])
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	if containerAsBytes == nil {
 		return shim.Error("Could not locate container")
 	}
 	container := Container{}
-	json.Unmarshal(containerAsBytes, &container)
-	logisticsasbytes1, _ := stub.GetState(container.Description)
+	err=json.Unmarshal(containerAsBytes, &container)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	logisticstranKey, err := stub.CreateCompositeKey("logisticstrans", []string{container.Description})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	logisticsasbytes1, err := stub.GetState(logisticstranKey)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	var logisticobj1 logisticstrans
 
-	json.Unmarshal(logisticsasbytes1, &logisticobj1)
-
+	err=json.Unmarshal(logisticsasbytes1, &logisticobj1)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	if logisticobj1.Status != "Wait-Sign" {
 		fmt.Println("we cannnot delivery the product which is not in Wait_Sign")
 		return shim.Error("we cannnot delivery the product which is not in Wait_Sign")
@@ -654,18 +832,45 @@ func (t *SmartContract) SignLogistics(stub shim.ChaincodeStubInterface, args []s
 		logisticobj1.Status = "Accepted  from Buyer"
 		container.Used = "false"
 		product := Product{}
-		productAsBytes,_ := stub.GetState(logisticobj1.SellerID + "." + logisticobj1.ProductID)
-		json.Unmarshal(productAsBytes,product)
+		productKey, err := stub.CreateCompositeKey("Product", []string{logisticobj1.SellerID,logisticobj1.ProductID})
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+		productAsBytes,err := stub.GetState( productKey )
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+		err=json.Unmarshal(productAsBytes,product)
+		if err != nil {
+			return shim.Error(err.Error())
+		}
 		product.Status = "false"
-		productAsBytes,_ = json.Marshal(product)
-		stub.PutState(logisticobj1.BuyerID + "." + logisticobj1.ProductID,productAsBytes)
+		productAsBytes,err = json.Marshal(product)
+		if err != nil {
+			return shim.Error(err.Error())
+		}
+		err=stub.PutState(productKey,productAsBytes)
+		if err != nil {
+			return shim.Error(err.Error())
+		}
 	}
 	logisticobj1.Count = strconv.Itoa(count)
-	containerAsBytes, _ = json.Marshal(container)
-	stub.PutState(args[0], containerAsBytes)
-	logisticsasbytes1, _ = json.Marshal(logisticobj1)
-	stub.PutState(container.Description, logisticsasbytes1)
-
+	containerAsBytes, err = json.Marshal(container)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	err=stub.PutState(args[0], containerAsBytes)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	logisticsasbytes1, err = json.Marshal(logisticobj1)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	err=stub.PutState(logisticstranKey, logisticsasbytes1)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	return shim.Success(nil)
 }
 
@@ -675,19 +880,27 @@ func (t *SmartContract) QueryLogistics(stub shim.ChaincodeStubInterface, args []
 	if len(args) != 1 {
 		return shim.Error("Invalid   no of arg for Query function ")
 	}
-	logisticsasbytes1, _ := stub.GetState(args[0])
+	logisticKey, err := stub.CreateCompositeKey("logisticstrans", []string{args[0]})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	logisticsasbytes1, err := stub.GetState(logisticKey)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
 	return shim.Success(logisticsasbytes1)
 }
 
 func (t *SmartContract) QueryAllLogistics(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	id,mspid,affiliation , err := ABAC(stub)
+	_,mspid,affiliation , err := ABAC(stub)
 	if err != nil {
 		return shim.Error("There was an error trying to retrieve the attribute")
 	}
-	holder := affiliation + "." + id
-	startKey := ""
-	endKey := ""
-	resultsIterator, err := stub.GetStateByRange(startKey, endKey)
+	if len(args) != 1 {
+		return shim.Error("Invalid   no of arg for Query function ")
+	}
+	holder := affiliation+args[0]
+	resultsIterator, err := stub.GetStateByPartialCompositeKey("logisticstrans", []string{})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
