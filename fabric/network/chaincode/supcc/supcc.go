@@ -136,34 +136,24 @@ func (s *SmartContract) QueryAllParticipant(stub shim.ChaincodeStubInterface, ar
 	}
 	defer resultsIterator.Close()
 
-	// buffer is a JSON array containing QueryResults
 	var buffer bytes.Buffer
-	buffer.WriteString("[")
-
 	bArrayMemberAlreadyWritten := false
-	for resultsIterator.HasNext() {
-		queryResponse, err := resultsIterator.Next()
-		if err != nil {
-			return shim.Error(err.Error())
-		}
+	buffer.WriteString(`{"result":[`)
 
-		// Add comma before array members,suppress it for the first array member
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next() //获取迭代器中的每一个值
+		if err != nil {
+			return shim.Error("Fail")
+		}
 		if bArrayMemberAlreadyWritten == true {
 			buffer.WriteString(",")
 		}
-		buffer.WriteString("{\"Key\":")
-		buffer.WriteString("\"")
-		buffer.WriteString(queryResponse.Key)
-		buffer.WriteString("\"")
-
-		buffer.WriteString(", \"Record\":")
-		buffer.WriteString(string(queryResponse.Value))
-		buffer.WriteString("}")
+		buffer.WriteString(string(queryResponse.Value)) //将查询结果放入Buffer中
 		bArrayMemberAlreadyWritten = true
 	}
-	buffer.WriteString("]")
+	buffer.WriteString(`]}`)
+	fmt.Print("Query result: %s", buffer.String())
 
-	fmt.Printf("- queryAllParticipant:\n%s\n", buffer.String())
 	return shim.Success(buffer.Bytes())
 }
 
@@ -231,34 +221,24 @@ func (s *SmartContract) QueryAllProduct(stub shim.ChaincodeStubInterface, args [
 	}
 	defer resultsIterator.Close()
 
-	// buffer is a JSON array containing QueryResults
 	var buffer bytes.Buffer
-	buffer.WriteString("[")
-
 	bArrayMemberAlreadyWritten := false
-	for resultsIterator.HasNext() {
-		queryResponse, err := resultsIterator.Next()
-		if err != nil {
-			return shim.Error(err.Error())
-		}
+	buffer.WriteString(`{"result":[`)
 
-		// Add comma before array members,suppress it for the first array member
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next() //获取迭代器中的每一个值
+		if err != nil {
+			return shim.Error("Fail")
+		}
 		if bArrayMemberAlreadyWritten == true {
 			buffer.WriteString(",")
 		}
-		buffer.WriteString("{\"Key\":")
-		buffer.WriteString("\"")
-		buffer.WriteString(queryResponse.Key)
-		buffer.WriteString("\"")
-
-		buffer.WriteString(", \"Record\":")
-		buffer.WriteString(string(queryResponse.Value))
-		buffer.WriteString("}")
+		buffer.WriteString(string(queryResponse.Value)) //将查询结果放入Buffer中
 		bArrayMemberAlreadyWritten = true
 	}
-	buffer.WriteString("]")
+	buffer.WriteString(`]}`)
+	fmt.Print("Query result: %s", buffer.String())
 
-	fmt.Printf("- queryAllProduct:\n%s\n", buffer.String())
 	return shim.Success(buffer.Bytes())
 }
 
@@ -382,34 +362,23 @@ func (s *SmartContract) QueryAllContainers(stub shim.ChaincodeStubInterface, arg
 	}
 	defer resultsIterator.Close()
 
-	// buffer is a JSON array containing QueryResults
 	var buffer bytes.Buffer
-	buffer.WriteString("[")
-
 	bArrayMemberAlreadyWritten := false
-	for resultsIterator.HasNext() {
-		queryResponse, err := resultsIterator.Next()
-		if err != nil {
-			return shim.Error(err.Error())
-		}
+	buffer.WriteString(`{"result":[`)
 
-		// Add comma before array members,suppress it for the first array member
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next() //获取迭代器中的每一个值
+		if err != nil {
+			return shim.Error("Fail")
+		}
 		if bArrayMemberAlreadyWritten == true {
 			buffer.WriteString(",")
 		}
-		buffer.WriteString("{\"Key\":")
-		buffer.WriteString("\"")
-		buffer.WriteString(queryResponse.Key)
-		buffer.WriteString("\"")
-
-		buffer.WriteString(", \"Record\":")
-		buffer.WriteString(string(queryResponse.Value))
-		buffer.WriteString("}")
+		buffer.WriteString(string(queryResponse.Value)) //将查询结果放入Buffer中
 		bArrayMemberAlreadyWritten = true
 	}
-	buffer.WriteString("]")
-
-	fmt.Printf("- queryAllContainers:\n%s\n", buffer.String())
+	buffer.WriteString(`]}`)
+	fmt.Print("Query result: %s", buffer.String())
 
 	return shim.Success(buffer.Bytes())
 }
@@ -908,13 +877,13 @@ func (t *SmartContract) QueryAllLogistics(stub shim.ChaincodeStubInterface, args
 
 	// buffer is a JSON array containing QueryResults
 	var buffer bytes.Buffer
-	buffer.WriteString("[")
-
 	bArrayMemberAlreadyWritten := false
+	buffer.WriteString(`{"result":[`)
+
 	for resultsIterator.HasNext() {
-		queryResponse, err := resultsIterator.Next()
+		queryResponse, err := resultsIterator.Next() //获取迭代器中的每一个值
 		if err != nil {
-			return shim.Error(err.Error())
+			return shim.Error("Fail")
 		}
 		logis := logisticstrans{}
 		json.Unmarshal(queryResponse.Value,logis)
@@ -927,25 +896,14 @@ func (t *SmartContract) QueryAllLogistics(stub shim.ChaincodeStubInterface, args
 				continue
 			}
 		}
-
-		// Add comma before array members,suppress it for the first array member
 		if bArrayMemberAlreadyWritten == true {
 			buffer.WriteString(",")
 		}
-		buffer.WriteString("{\"Key\":")
-		buffer.WriteString("\"")
-		buffer.WriteString(queryResponse.Key)
-		buffer.WriteString("\"")
-
-		buffer.WriteString(", \"Record\":")
-		buffer.WriteString(string(queryResponse.Value))
-		buffer.WriteString("}")
+		buffer.WriteString(string(queryResponse.Value)) //将查询结果放入Buffer中
 		bArrayMemberAlreadyWritten = true
 	}
-	buffer.WriteString("]")
-
-	fmt.Printf("- queryAllLogistics:\n%s\n", buffer.String())
-
+	buffer.WriteString(`]}`)
+	fmt.Print("Query result: %s", buffer.String())
 	return shim.Success(buffer.Bytes())
 }
 

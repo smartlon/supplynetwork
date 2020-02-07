@@ -31,6 +31,47 @@ func (lc *LogisticsController) EnrollUser(){
 	lc.ServeJSON()
 }
 
+func (lc *LogisticsController) RecordProduct(){
+	orgName,userName,err := VerifyToken(lc.Ctx)
+	if err != nil {
+		lc.Data["json"] = map[string]interface{}{"code": 201,"msg": err.Error(), "data": ""}
+		lc.ServeJSON()
+	}
+	recordProductReqBytes := lc.Ctx.Input.RequestBody
+	code, message, ret := invokeController(recordProductReqBytes,orgName ,userName)
+	lc.Data["json"] = map[string]interface{}{"code": code,"msg": message, "data": ret}
+	lc.ServeJSON()
+}
+type ProductQueryResponse struct {
+	Record    []Product `json:"result"`
+}
+type Product struct {
+	ProductID string `json:"ProductID"`
+	ProductType string `json:"ProductType"`
+	Description string `json:"Description"`
+	Timestamp string `json:"Timestamp"`
+	Status string `json:"Status"`
+	Holder  string `json:"Holder"`
+}
+
+func (lc *LogisticsController) QueryAllProduct(){
+	orgName,userName,err := VerifyToken(lc.Ctx)
+	if err != nil {
+		lc.Data["json"] = map[string]interface{}{"code": 201,"msg": err.Error(), "data": ""}
+		lc.ServeJSON()
+	}
+	queryAllProductReqBytes := lc.Ctx.Input.RequestBody
+	code, message, ret := invokeController(queryAllProductReqBytes,orgName ,userName)
+	var qr ProductQueryResponse
+	err = json.Unmarshal([]byte(ret),&qr)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	count := len(qr.Record)
+	lc.Data["json"] = map[string]interface{}{"code": code,"count": count,"msg": message, "data": qr.Record}
+	lc.ServeJSON()
+}
+
 func (lc *LogisticsController) RequestLogistic(){
 	orgName,userName,err := VerifyToken(lc.Ctx)
 	if err != nil {
@@ -77,6 +118,7 @@ func (lc *LogisticsController) QueryLogistics(){
 	lc.ServeJSON()
 }
 
+
 func (lc *LogisticsController) RecordContainer(){
 	orgName,userName,err := VerifyToken(lc.Ctx)
 	if err != nil {
@@ -88,6 +130,8 @@ func (lc *LogisticsController) RecordContainer(){
 	lc.Data["json"] = map[string]interface{}{"code": code,"msg": message, "data": ret}
 	lc.ServeJSON()
 }
+
+
 func (lc *LogisticsController) QueryContainer(){
 	orgName,userName,err := VerifyToken(lc.Ctx)
 	if err != nil {
@@ -100,8 +144,7 @@ func (lc *LogisticsController) QueryContainer(){
 	lc.ServeJSON()
 }
 type ContainerQueryResponse struct {
-	Key    string `json:"Key"`
-	Record    Container `json:"Record"`
+	Record    []Container `json:"result"`
 }
 type Container struct {
 	ContainerID string `json:"ContainerID"`
@@ -120,23 +163,18 @@ func (lc *LogisticsController) QueryAllContainers(){
 	}
 	queryAllContainersReqBytes := lc.Ctx.Input.RequestBody
 	code, message, ret := invokeController(queryAllContainersReqBytes,orgName ,userName)
-	var qr []ContainerQueryResponse
+	var qr ContainerQueryResponse
 	err = json.Unmarshal([]byte(ret),&qr)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	count := len(qr)
-	var resp []Container
-	for _,v := range qr {
-		resp = append(resp,v.Record)
-	}
-	lc.Data["json"] = map[string]interface{}{"code": code,"count": count,"msg": message, "data": resp}
+	count := len(qr.Record)
+	lc.Data["json"] = map[string]interface{}{"code": code,"count": count,"msg": message, "data": qr.Record}
 	lc.ServeJSON()
 }
 
 type logisticstransQueryResponse struct {
-	Key    string `json:"Key"`
-	Record    logisticstrans `json:"Record"`
+	Record    []logisticstrans `json:"result"`
 }
 
 type logisticstrans struct {
@@ -171,25 +209,21 @@ func (lc *LogisticsController) QueryAllLogistics(){
 	queryAllLogisticsReqBytes := lc.Ctx.Input.RequestBody
 	code, message, ret := invokeController(queryAllLogisticsReqBytes,orgName,userName)
 	retBytes := bytes.Trim([]byte(ret),`\x00`)
-	var qr []logisticstransQueryResponse
+	var qr logisticstransQueryResponse
 	err = json.Unmarshal(retBytes,&qr)
 	if err != nil {
 		fmt.Println(err.Error())
 		lc.Data["json"] = map[string]interface{}{"code": 201,"msg": err.Error(), "data": ""}
 		lc.ServeJSON()
 	}
-	count := len(qr)
-	var resp []logisticstrans
-	for _,v := range qr {
-		resp = append(resp,v.Record)
-	}
-	lc.Data["json"] = map[string]interface{}{"code": code,"count": count,"msg": message, "data": resp}
+	count := len(qr.Record)
+
+	lc.Data["json"] = map[string]interface{}{"code": code,"count": count,"msg": message, "data": qr.Record}
 	lc.ServeJSON()
 }
 
 type ParticipantQueryResponse struct {
-	Key    string `json:"Key"`
-	Record    Participant `json:"Record"`
+	Record    []Participant `json:"result"`
 }
 
 type Participant struct {
@@ -207,18 +241,14 @@ func (lc *LogisticsController) QueryAllParticipant(){
 	queryAllParticipantReqBytes := lc.Ctx.Input.RequestBody
 	code, message, ret := invokeController(queryAllParticipantReqBytes,orgName,userName)
 	fmt.Println("QueryAllParticipant",[]byte(ret))
-	var qr []ParticipantQueryResponse
-	index :=bytes.IndexByte([]byte(ret),0)
-	err = json.Unmarshal([]byte(ret)[:index],&qr)
+	var qr ParticipantQueryResponse
+
+	err = json.Unmarshal([]byte(ret),&qr)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-	count := len(qr)
-	var resp []Participant
-	for _,v := range qr {
-		resp = append(resp,v.Record)
-	}
-	lc.Data["json"] = map[string]interface{}{"code": code,"count": count,"msg": message, "data": resp}
+	count := len(qr.Record)
+	lc.Data["json"] = map[string]interface{}{"code": code,"count": count,"msg": message, "data": qr.Record}
 	lc.ServeJSON()
 }
 

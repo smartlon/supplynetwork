@@ -20,6 +20,8 @@ func init() {
 	beego.Router("/fabric/querycontainer", &controller.LogisticsController{},"post:QueryContainer")
 	beego.Router("/fabric/queryallcontainers", &controller.LogisticsController{},"post:QueryAllContainers")
 
+	beego.Router("/fabric/recordproduct", &controller.LogisticsController{},"post:RecordProduct")
+	beego.Router("/fabric/queryallproduct", &controller.LogisticsController{},"post:QueryAllProduct")
 	//user management
 	beego.Router("/queryallparticipants", &controller.LogisticsController{},"post:QueryAllParticipant")
 	beego.Router("/registeruser", &controller.LogisticsController{},"post:RegisterUser")
