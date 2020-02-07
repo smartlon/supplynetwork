@@ -170,11 +170,13 @@ func (lc *LogisticsController) QueryAllLogistics(){
 	}
 	queryAllLogisticsReqBytes := lc.Ctx.Input.RequestBody
 	code, message, ret := invokeController(queryAllLogisticsReqBytes,orgName,userName)
-	retBytes := bytes.Trim([]byte(ret),"\x00")
+	retBytes := bytes.Trim([]byte(ret),`\x00`)
 	var qr []logisticstransQueryResponse
 	err = json.Unmarshal(retBytes,&qr)
 	if err != nil {
 		fmt.Println(err.Error())
+		lc.Data["json"] = map[string]interface{}{"code": 201,"msg": err.Error(), "data": ""}
+		lc.ServeJSON()
 	}
 	count := len(qr)
 	var resp []logisticstrans
