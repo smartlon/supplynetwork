@@ -271,7 +271,7 @@ func invokeController(invokeReqBytes []byte,orgName, userName string)(code int, 
 		argscomposite := []string{sidekey,timestamp}
 		invokeReq.Args = append(invokeReq.Args,argscomposite...)
 	}
-	if  invokeReq.Func == "DeliveryLogistics" {
+	if  invokeReq.Func == "DeliveryLogistics" || invokeReq.Func == "RecordProduct"{
 		timestamp := timeStamp()
 		invokeReq.Args = append(invokeReq.Args,timestamp)
 	}
