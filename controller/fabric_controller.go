@@ -208,7 +208,7 @@ func (lc *LogisticsController) QueryAllParticipant(){
 	code, message, ret := invokeController(queryAllParticipantReqBytes,orgName,userName)
 	fmt.Println("QueryAllParticipant",[]byte(ret))
 	var qr []ParticipantQueryResponse
-	err = json.Unmarshal([]byte(ret)[:],&qr)
+	err = json.Unmarshal([]byte(ret)[:len([]byte(ret))],&qr)
 	if err != nil {
 		fmt.Println(err.Error())
 	}
