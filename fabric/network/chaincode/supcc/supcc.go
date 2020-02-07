@@ -448,7 +448,7 @@ func (t *SmartContract) RequestLogistic(stub shim.ChaincodeStubInterface, args [
 		return shim.Error(err.Error())
 	}
 	product.Status = "true"
-	productAsBytes, err = json.Marshal(product)
+	productAsBytes2, err := json.Marshal(product)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -458,11 +458,11 @@ func (t *SmartContract) RequestLogistic(stub shim.ChaincodeStubInterface, args [
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	participantAsBytes,err  := stub.GetState(sellerKey)
+	sellerParticipantAsBytes,err  := stub.GetState(sellerKey)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	err = json.Unmarshal(participantAsBytes,&sellerParticipant)
+	err = json.Unmarshal(sellerParticipantAsBytes,&sellerParticipant)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -471,11 +471,11 @@ func (t *SmartContract) RequestLogistic(stub shim.ChaincodeStubInterface, args [
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	participantAsBytes,err  = stub.GetState(buyerKey)
+	buyerParticipantAsBytes,err  := stub.GetState(buyerKey)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	err = json.Unmarshal(participantAsBytes,&buyerParticipant)
+	err = json.Unmarshal(buyerParticipantAsBytes,&buyerParticipant)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -484,11 +484,11 @@ func (t *SmartContract) RequestLogistic(stub shim.ChaincodeStubInterface, args [
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	participantAsBytes,err  = stub.GetState(logistiKey)
+	logistiParticipantAsBytes,err  := stub.GetState(logistiKey)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	err = json.Unmarshal(participantAsBytes,&logistiParticipant)
+	err = json.Unmarshal(logistiParticipantAsBytes,&logistiParticipant)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -516,7 +516,7 @@ func (t *SmartContract) RequestLogistic(stub shim.ChaincodeStubInterface, args [
 	if err != nil {
 		return shim.Error(fmt.Sprintf("Failed to request logistics: %s", logisticstranKey))
 	}
-	err = stub.PutState(productKey, productAsBytes)
+	err = stub.PutState(productKey, productAsBytes2)
 	if err != nil {
 		return shim.Error(fmt.Sprintf("Failed to deliver product: %s", productKey))
 	}
@@ -598,35 +598,35 @@ func (t *SmartContract) TransitLogistics(stub shim.ChaincodeStubInterface, args 
 	}
 
 	logisticobj.Status = "Ready-Transit"
-	logisticsAsBytes, err = json.Marshal(logisticobj)
+	logisticsAsBytes2, err := json.Marshal(logisticobj)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	err =stub.PutState(logisticstranKey, logisticsAsBytes)
+	err =stub.PutState(logisticstranKey, logisticsAsBytes2)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	containerAsBytes, err = json.Marshal(container)
+	containerAsBytes2, err := json.Marshal(container)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	err = stub.PutState(containerKey, containerAsBytes)
+	err = stub.PutState(containerKey, containerAsBytes2)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	iotaPayloadAsBytes, err = json.Marshal(iotaPayload)
+	iotaPayloadAsBytes2, err := json.Marshal(iotaPayload)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	err = stub.PutState(iotaKey, iotaPayloadAsBytes)
+	err = stub.PutState(iotaKey, iotaPayloadAsBytes2)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	err = stub.SetEvent(`{"From":"Fabric","To":"Iota","Func":"CreateChannel"}`, iotaPayloadAsBytes)
+	err = stub.SetEvent(`{"From":"Fabric","To":"Iota","Func":"CreateChannel"}`, iotaPayloadAsBytes2)
 	if err != nil {
 		fmt.Println("Could not set event for loan application creation", err)
 	}
-	return shim.Success(logisticsAsBytes)
+	return shim.Success(logisticsAsBytes2)
 }
 
 func (t *SmartContract) InTransitLogistics(stub shim.ChaincodeStubInterface, args []string) pb.Response {
@@ -685,23 +685,23 @@ func (t *SmartContract) InTransitLogistics(stub shim.ChaincodeStubInterface, arg
 	}
 
 	logisticobj.Status = "In-Transit"
-	logisticsAsBytes, err = json.Marshal(logisticobj)
+	logisticsAsBytes2, err := json.Marshal(logisticobj)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	err= stub.PutState(logisticstranKey, logisticsAsBytes)
+	err= stub.PutState(logisticstranKey, logisticsAsBytes2)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	iotaPayloadAsBytes, err = json.Marshal(iotaPayload)
+	iotaPayloadAsBytes2, err := json.Marshal(iotaPayload)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	err=stub.PutState(iotaKey, iotaPayloadAsBytes)
+	err=stub.PutState(iotaKey, iotaPayloadAsBytes2)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	return shim.Success(logisticsAsBytes)
+	return shim.Success(logisticsAsBytes2)
 }
 
 func (t *SmartContract) DeliveryLogistics(stub shim.ChaincodeStubInterface, args []string) pb.Response {
@@ -737,11 +737,11 @@ func (t *SmartContract) DeliveryLogistics(stub shim.ChaincodeStubInterface, args
 	timestamp := args[1]
 	logisticobj1.JourneyEndTime = timestamp
 	logisticobj1.Status = "Wait-Sign"
-	logisticsasbytes1, err = json.Marshal(logisticobj1)
+	logisticsasbytes2, err := json.Marshal(logisticobj1)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	err = stub.PutState(logisticstranKey, logisticsasbytes1)
+	err = stub.PutState(logisticstranKey, logisticsasbytes2)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
