@@ -106,6 +106,7 @@ func (lc *LogisticsController) DeliveryLogistics(){
 	lc.Data["json"] = map[string]interface{}{"code": code,"msg": message, "data": ret}
 	lc.ServeJSON()
 }
+
 func (lc *LogisticsController) QueryLogistics(){
 	orgName,userName,err := VerifyToken(lc.Ctx)
 	if err != nil {

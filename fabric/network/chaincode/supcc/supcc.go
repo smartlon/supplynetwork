@@ -167,8 +167,7 @@ func (s *SmartContract) QueryAllParticipant(stub shim.ChaincodeStubInterface, ar
 		bArrayMemberAlreadyWritten = true
 	}
 	buffer.WriteString(`]}`)
-	fmt.Print("Query result: %s", buffer.String())
-
+	fmt.Printf("Query result: %s\n", buffer.String())
 	return shim.Success(buffer.Bytes())
 }
 
@@ -252,8 +251,7 @@ func (s *SmartContract) QueryAllProduct(stub shim.ChaincodeStubInterface, args [
 		bArrayMemberAlreadyWritten = true
 	}
 	buffer.WriteString(`]}`)
-	fmt.Print("Query result: %s", buffer.String())
-
+	fmt.Printf("Query result: %s\n", buffer.String())
 	return shim.Success(buffer.Bytes())
 }
 
@@ -285,7 +283,7 @@ func (s *SmartContract) RecordContainer(stub shim.ChaincodeStubInterface, args [
 	mode := "restricted"
 	seed := args[4]
 	sideKey := args[5]
-	iotaPayload := IotaPayload{ContainerID:containerKey,Seed: seed, MamState: "", Root: "", Mode: mode, SideKey: sideKey}
+	iotaPayload := IotaPayload{ContainerID:affiliation+args[6]+"."+args[0],Seed: seed, MamState: "", Root: "", Mode: mode, SideKey: sideKey}
 	iotaPayloadAsBytes, err := json.Marshal(iotaPayload)
 	if err != nil {
 		return shim.Error(err.Error())
@@ -393,8 +391,7 @@ func (s *SmartContract) QueryAllContainers(stub shim.ChaincodeStubInterface, arg
 		bArrayMemberAlreadyWritten = true
 	}
 	buffer.WriteString(`]}`)
-	fmt.Print("Query result: %s", buffer.String())
-
+	fmt.Printf("Query result: %s\n", buffer.String())
 	return shim.Success(buffer.Bytes())
 }
 
@@ -581,7 +578,7 @@ func (t *SmartContract) TransitLogistics(stub shim.ChaincodeStubInterface, args 
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	logisticobj.MAMChannel.ContainerID = containerKey
+	logisticobj.MAMChannel.ContainerID = affiliation+args[4]+"."+args[1]
 	containerAsBytes, err := stub.GetState(containerKey)
 	if err != nil {
 		return shim.Error(err.Error())
@@ -660,7 +657,12 @@ func (t *SmartContract) InTransitLogistics(stub shim.ChaincodeStubInterface, arg
 	if len(args) != 3 {
 		return shim.Error("Incorrect number of arguments. Expecting Minimum 3")
 	}
-	containerAsBytes, err := stub.GetState(args[0])
+	index := strings.LastIndex(args[0],".")
+	containerKey, err := stub.CreateCompositeKey("Container", []string{args[0][:index],args[0][index+1:]})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	containerAsBytes, err := stub.GetState(containerKey)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -686,7 +688,7 @@ func (t *SmartContract) InTransitLogistics(stub shim.ChaincodeStubInterface, arg
 		return shim.Error(err.Error())
 	}
 	logisticobj.MAMChannel.Root = args[1]
-	iotaKey, err := stub.CreateCompositeKey("IotaPayload", []string{strings.TrimLeft(args[0],"Container")})
+	iotaKey, err := stub.CreateCompositeKey("IotaPayload", []string{args[0][:index],args[0][index+1:]})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -770,7 +772,9 @@ func (t *SmartContract) DeliveryLogistics(stub shim.ChaincodeStubInterface, args
 	if err != nil {
 		return shim.Error(err.Error())
 	}
-	iotaKey, err := stub.CreateCompositeKey("IotaPayload", []string{strings.TrimLeft(logisticobj1.MAMChannel.ContainerID,"Container")})
+	containerID :=logisticobj1.MAMChannel.ContainerID
+	index := strings.LastIndex(containerID,".")
+	iotaKey, err := stub.CreateCompositeKey("IotaPayload", []string{containerID[:index],containerID[index+1:]})
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -791,7 +795,12 @@ func (t *SmartContract) SignLogistics(stub shim.ChaincodeStubInterface, args []s
 		return shim.Error("Invalid   no of arg for Sign function ")
 
 	}
-	containerAsBytes, err := stub.GetState(args[0])
+	index := strings.LastIndex(args[0],".")
+	containerKey, err := stub.CreateCompositeKey("Container", []string{args[0][:index],args[0][index+1:]})
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	containerAsBytes, err := stub.GetState(containerKey)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -932,23 +941,24 @@ func (t *SmartContract) QueryAllLogistics(stub shim.ChaincodeStubInterface, args
 		}
 		logis := logisticstrans{}
 		json.Unmarshal(queryResponse.Value,logis)
-		if mspid != "DelivererMSP" {
-			if !(logis.BuyerID == holder || logis.SellerID == holder) {
-				continue
+		if mspid != "DelivererMSP" &&(logis.BuyerID == holder || logis.SellerID == holder) {
+			if bArrayMemberAlreadyWritten == true {
+				buffer.WriteString(",")
 			}
-		}else {
-			if logis.LogisticstranID != holder {
-				continue
+			buffer.WriteString(string(queryResponse.Value)) //将查询结果放入Buffer中
+			bArrayMemberAlreadyWritten = true
+		}
+		if mspid == "DelivererMSP" &&logis.LogisticstranID == holder {
+			if bArrayMemberAlreadyWritten == true {
+				buffer.WriteString(",")
 			}
+			buffer.WriteString(string(queryResponse.Value)) //将查询结果放入Buffer中
+			bArrayMemberAlreadyWritten = true
 		}
-		if bArrayMemberAlreadyWritten == true {
-			buffer.WriteString(",")
-		}
-		buffer.WriteString(string(queryResponse.Value)) //将查询结果放入Buffer中
-		bArrayMemberAlreadyWritten = true
+
 	}
 	buffer.WriteString(`]}`)
-	fmt.Print("Query result: %s", buffer.String())
+	fmt.Printf("Query result: %s\n", buffer.String())
 	return shim.Success(buffer.Bytes())
 }
 
