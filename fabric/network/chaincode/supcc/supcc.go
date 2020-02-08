@@ -915,7 +915,7 @@ func (t *SmartContract) QueryLogistics(stub shim.ChaincodeStubInterface, args []
 }
 
 func (t *SmartContract) QueryAllLogistics(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	_,mspid,affiliation , err := ABAC(stub)
+	_,_,affiliation , err := ABAC(stub)
 	if err != nil {
 		return shim.Error("There was an error trying to retrieve the attribute")
 	}
@@ -939,26 +939,20 @@ func (t *SmartContract) QueryAllLogistics(stub shim.ChaincodeStubInterface, args
 		if err != nil {
 			return shim.Error("Fail")
 		}
-		logis := logisticstrans{}
-		json.Unmarshal(queryResponse.Value,logis)
-		if mspid != "DelivererMSP" &&(logis.BuyerID == holder || logis.SellerID == holder) {
-			if bArrayMemberAlreadyWritten == true {
-				buffer.WriteString(",")
-			}
-			buffer.WriteString(string(queryResponse.Value)) //将查询结果放入Buffer中
-			bArrayMemberAlreadyWritten = true
+		//logis := logisticstrans{}
+		//err = json.Unmarshal(queryResponse.Value,logis)
+		//if err != nil {
+		//	return shim.Error(err.Error())
+		//}
+		if bArrayMemberAlreadyWritten == true {
+			buffer.WriteString(",")
 		}
-		if mspid == "DelivererMSP" &&logis.LogisticstranID == holder {
-			if bArrayMemberAlreadyWritten == true {
-				buffer.WriteString(",")
-			}
-			buffer.WriteString(string(queryResponse.Value)) //将查询结果放入Buffer中
-			bArrayMemberAlreadyWritten = true
-		}
+		buffer.WriteString(string(queryResponse.Value)) //将查询结果放入Buffer中
+		bArrayMemberAlreadyWritten = true
 
 	}
 	buffer.WriteString(`]}`)
-	fmt.Printf("Query result: %s\n", buffer.String())
+	fmt.Printf("%s Query result: %s\n", holder,buffer.String())
 	return shim.Success(buffer.Bytes())
 }
 
