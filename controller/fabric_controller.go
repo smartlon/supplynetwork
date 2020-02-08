@@ -232,6 +232,18 @@ type Participant struct {
 	Location string `json:"Location"`
 }
 
+func (lc *LogisticsController) QueryParticipant(){
+	orgName,userName,err := VerifyToken(lc.Ctx)
+	if err != nil {
+		lc.Data["json"] = map[string]interface{}{"code": 201,"msg": err.Error(), "data": ""}
+		lc.ServeJSON()
+	}
+	queryParticipantReqBytes := lc.Ctx.Input.RequestBody
+	code, message, ret := invokeController(queryParticipantReqBytes,orgName,userName)
+	lc.Data["json"] = map[string]interface{}{"code": code,"msg": message, "data": ret}
+	lc.ServeJSON()
+}
+
 func (lc *LogisticsController) QueryAllParticipant(){
 	orgName,userName,err := VerifyToken(lc.Ctx)
 	if err != nil {
