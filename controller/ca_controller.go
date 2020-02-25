@@ -52,7 +52,7 @@ func (lc *LogisticsController) GetAllUser(){
 	orgName,_,err := VerifyToken(lc.Ctx)
 	if err != nil {
 		fmt.Println(err.Error())
-		lc.Data["json"] = map[string]interface{}{"code":201,"success": false,"msg": err.Error(), "user": "","count": 0}
+		lc.Data["json"] = map[string]interface{}{"code":201,"msg": err.Error(), "user": "","count": 0}
 		lc.ServeJSON()
 	}
 	allUser, msg, success := casdk.GetAllUser(orgName)
@@ -61,7 +61,7 @@ func (lc *LogisticsController) GetAllUser(){
 	if success == false {
 		code = 201
 	}
-	lc.Data["json"] = map[string]interface{}{"code":code,"success": success,"msg": msg, "user": allUser,"count": count}
+	lc.Data["json"] = map[string]interface{}{"code":code,"msg": msg, "user": allUser,"count": count}
 	lc.ServeJSON()
 }
 
