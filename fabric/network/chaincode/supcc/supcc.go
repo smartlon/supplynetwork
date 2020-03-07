@@ -659,12 +659,10 @@ func (t *SmartContract) InTransitLogistics(stub shim.ChaincodeStubInterface, arg
 	}
 	index := strings.LastIndex(args[0],".")
 	containerKey, err := stub.CreateCompositeKey("Container", []string{args[0][:index],args[0][index+1:]})
-	fmt.Printf("container key: %s \n",containerKey)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 	containerAsBytes, err := stub.GetState(containerKey)
-	fmt.Printf("container: %s \n",string(containerAsBytes))
 	if err != nil {
 		return shim.Error(err.Error())
 	}
@@ -718,6 +716,7 @@ func (t *SmartContract) InTransitLogistics(stub shim.ChaincodeStubInterface, arg
 	if err != nil {
 		return shim.Error(err.Error())
 	}
+	fmt.Printf("logisticobj: %s \n",string(logisticsAsBytes2))
 	err= stub.PutState(logisticstranKey, logisticsAsBytes2)
 	if err != nil {
 		return shim.Error(err.Error())
@@ -726,6 +725,7 @@ func (t *SmartContract) InTransitLogistics(stub shim.ChaincodeStubInterface, arg
 	if err != nil {
 		return shim.Error(err.Error())
 	}
+	fmt.Printf("iotaPayload: %s \n",string(iotaPayloadAsBytes2))
 	err=stub.PutState(iotaKey, iotaPayloadAsBytes2)
 	if err != nil {
 		return shim.Error(err.Error())
