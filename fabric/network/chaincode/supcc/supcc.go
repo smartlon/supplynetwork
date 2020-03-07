@@ -659,10 +659,12 @@ func (t *SmartContract) InTransitLogistics(stub shim.ChaincodeStubInterface, arg
 	}
 	index := strings.LastIndex(args[0],".")
 	containerKey, err := stub.CreateCompositeKey("Container", []string{args[0][:index],args[0][index+1:]})
+	fmt.Printf("container key: %s \n",containerKey)
 	if err != nil {
 		return shim.Error(err.Error())
 	}
 	containerAsBytes, err := stub.GetState(containerKey)
+	fmt.Printf("container: %s \n",string(containerAsBytes))
 	if err != nil {
 		return shim.Error(err.Error())
 	}

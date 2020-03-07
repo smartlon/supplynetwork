@@ -8,7 +8,7 @@ import (
 
 const (
 	SECRET = "supplychain"
-	DEFAULT_EXPIRE_SECONDS = 600
+	DEFAULT_EXPIRE_SECONDS = 60000
 )
 
 type User struct {
