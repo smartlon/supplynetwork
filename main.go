@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/plugins/cors"
-	_ "github.com/smartlon/supplynetwork/rooter"
 )
 
 
