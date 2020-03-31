@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-module github.com/smartlon/gateway/adapter
+module github.com/smartlon/supplynetwork
 
 require (
 	github.com/Shopify/sarama v1.24.1 // indirect
